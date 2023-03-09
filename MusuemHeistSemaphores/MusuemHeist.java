@@ -6,6 +6,8 @@ import entities.OrdinaryThief;
 import shared.CollectionSiteMemory;
 import shared.ConcentrationSiteMemory;
 import shared.GeneralMemory;
+import shared.MusuemMemory;
+import shared.PartiesMemory;
 
 public class MusuemHeist {
 
@@ -17,9 +19,10 @@ public class MusuemHeist {
         MasterThief masterThief = null;
 
         GeneralMemory generalMemory = new GeneralMemory();
-
-        ConcentrationSiteMemory concentrationSite = new ConcentrationSiteMemory(generalMemory);
-        CollectionSiteMemory collectionSite = new CollectionSiteMemory(generalMemory, concentrationSite);
+        MusuemMemory musuemMemory = new MusuemMemory();
+        PartiesMemory partiesMemory = new PartiesMemory(musuemMemory);
+        ConcentrationSiteMemory concentrationSite = new ConcentrationSiteMemory(generalMemory, partiesMemory);
+        CollectionSiteMemory collectionSite = new CollectionSiteMemory(generalMemory, concentrationSite, musuemMemory, partiesMemory);
         concentrationSite.setCollectionSiteMemory(collectionSite);
 
         for (int i = 0; i < HeistConstants.NUM_THIEVES - 1; i++) {

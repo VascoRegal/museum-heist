@@ -14,7 +14,6 @@ public class GeneralMemory {
 
     private boolean heistInProgress;
 
-    private int numActiveParties;
 
     public GeneralMemory() {
         ordinaryThiefState = new ThiefState [HeistConstants.NUM_THIEVES];
@@ -41,18 +40,16 @@ public class GeneralMemory {
     }
 
     public boolean isHeistInProgres() {
-        return heistInProgress;
+        boolean res;
+        access.down();
+        res = heistInProgress;
+        access.up();
+        return res;
     }
 
-    public int getNumParties() {
-        return numActiveParties;
-    }
-
-    public void incrementParties() {
-        numActiveParties++;
-    }
-
-    public void decrementParties() {
-        numActiveParties--;
+    public void finishHeist() {
+        access.down();
+        heistInProgress = false;
+        access.up();
     }
 }

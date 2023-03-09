@@ -30,6 +30,14 @@ public class MemQueue<T> {
         return object;
     }
 
+    public T peek() {
+        T object = null;
+        if (!isEmpty()) {
+            return this.array[front];
+        }
+        return object;
+    }
+
     public int size() {
         return this.size;
     }

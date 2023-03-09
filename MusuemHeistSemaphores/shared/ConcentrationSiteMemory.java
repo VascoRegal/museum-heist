@@ -19,6 +19,8 @@ public class ConcentrationSiteMemory {
     private final GeneralMemory generalMemory;
 
     private CollectionSiteMemory collectionSiteMemory;
+    
+    private final PartiesMemory partiesMemory;
 
     private final Semaphore access;
 
@@ -26,14 +28,17 @@ public class ConcentrationSiteMemory {
 
     private MemQueue<Integer> availableThieves;
 
-    public ConcentrationSiteMemory(GeneralMemory generalMemory) {
+    public ConcentrationSiteMemory(
+        GeneralMemory generalMemory,
+        PartiesMemory partiesMemory
+        ) {
         ordinaryThieves = new OrdinaryThief [HeistConstants.NUM_THIEVES - 1];
         for (int i = 0; i < HeistConstants.NUM_THIEVES - 1; i++) {
             ordinaryThieves[i] = null;
         }
-
         this.generalMemory = generalMemory;
         this.collectionSiteMemory = null;
+        this.partiesMemory = partiesMemory;
         this.availableThieves = new MemQueue<Integer>(new Integer[HeistConstants.NUM_THIEVES - 1]);
         access = new Semaphore();
         access.up();
@@ -54,7 +59,6 @@ public class ConcentrationSiteMemory {
         LOGGER.info("[OT" + ordinaryThiefId + "] Am I needed?");
         ordinaryThieves[ordinaryThiefId].setState(ThiefState.CONCENTRATION_SITE);
         generalMemory.setOrdinaryThiefState(ordinaryThiefId, ThiefState.CONCENTRATION_SITE);
-
         availableThieves.enqueue(ordinaryThiefId);
         access.up();
         collectionSiteMemory.notifyAvailable();
@@ -73,8 +77,15 @@ public class ConcentrationSiteMemory {
         ordinaryThieves[ordinaryThiefId].setState(ThiefState.CRAWLING_INWARDS);
         generalMemory.setOrdinaryThiefState(ordinaryThiefId, ThiefState.CRAWLING_INWARDS);
         access.up();
-        wait[ordinaryThiefId].down();   
+        partiesMemory.thiefReady(ordinaryThiefId, ordinaryThieves[ordinaryThiefId].getPartyId());
         return true;
+    }
+
+    public void addThiefToParty(int thiefId, int partyId) {
+        access.down();
+        ordinaryThieves[thiefId].setPartyId(partyId);
+        partiesMemory.addThiefToParty(partyId, ordinaryThieves[thiefId]);
+        access.up();
     }
 
     public int getNumAvailableThieves() {
@@ -85,16 +96,16 @@ public class ConcentrationSiteMemory {
         return numAvailableThieves;
     }
 
-    public void getAvailableThief() {
+    public int getAvailableThief() {
         int availableThief;
         access.down();
         availableThief = availableThieves.dequeue();
         wait[availableThief].up();
         access.up();
+        return availableThief;
     }
 
     public void setCollectionSiteMemory(CollectionSiteMemory collectionSiteMemory) {
         this.collectionSiteMemory = collectionSiteMemory;
     }
-
 }

@@ -2,7 +2,6 @@ package entities;
 
 import consts.HeistConstants;
 import structs.Utils;
-import entities.ThiefState;
 import shared.ConcentrationSiteMemory;
 
 public class OrdinaryThief extends Thief
@@ -10,7 +9,8 @@ public class OrdinaryThief extends Thief
     private int position;
     private int md;
     private int hasCanvas;
-    private boolean needed;
+    private ThiefPartyState partyState;
+    private int partyId;
     private ConcentrationSiteMemory concentrationSiteMemory;
 
     public OrdinaryThief(int id, ConcentrationSiteMemory concentrationSiteMemory) {
@@ -18,8 +18,9 @@ public class OrdinaryThief extends Thief
         this.position = 0;
         this.md = Utils.randIntInRange(HeistConstants.MIN_THIEF_MD, HeistConstants.MAX_THIEF_MD);
         this.state = ThiefState.CONCENTRATION_SITE;
+        this.partyState = ThiefPartyState.AVAILABLE;
+        this.partyId = -1;
         this.hasCanvas = 0;
-        this.needed = false;
         this.concentrationSiteMemory = concentrationSiteMemory;
     }
 
@@ -31,38 +32,27 @@ public class OrdinaryThief extends Thief
         }
     }
 
-    public int hasCanvas() {
-        return this.hasCanvas;
+    public void setPartyState(ThiefPartyState thiefPartyState) {
+        partyState = thiefPartyState;
     }
 
-    private void rollACanvas() {
-        if (this.hasCanvas == 1) {
-            return;
-        } else {
-            this.hasCanvas = 1;
-        }
+    public ThiefPartyState getPartyState() {
+        return partyState;
     }
 
-    private void handACanvas() {
-        if (this.hasCanvas == 0) {
-            return;
-        } else {
-            this.hasCanvas = 0;
-        }
-        this.state = ThiefState.COLLECTION_SITE;
+    public void setPartyId(int id) {
+        this.partyId = id;
     }
 
-    private void amINeeded() {
-        this.notifyMT();
+    public int getPartyId() {
+        return this.partyId;
     }
 
-    private void prepareExcursion() {
-        LOGGER.info("Ordinary Thief " + this.id + " ready for excursion.");
-        this.notifyMT();
-        this.state = ThiefState.CRAWLING_INWARDS;
+    public void move(int distance) {
+        this.position = distance;
     }
 
-    private void notifyMT(){
-
+    public int getMaxDisplacement() {
+        return this.md;
     }
 }

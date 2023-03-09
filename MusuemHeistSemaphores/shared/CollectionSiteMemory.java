@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import consts.HeistConstants;
 import entities.MasterThief;
+import entities.Party;
 import entities.ThiefState;
 import structs.Semaphore;
 
@@ -17,6 +18,10 @@ public class CollectionSiteMemory {
 
     private final ConcentrationSiteMemory concentrationSiteMemory;
 
+    private final MusuemMemory musuemMemory;
+
+    private final PartiesMemory partiesMemory;
+
     private final Semaphore access;
 
     private final Semaphore assemble;
@@ -25,10 +30,16 @@ public class CollectionSiteMemory {
 
     private final Semaphore wait;
 
-    public CollectionSiteMemory(GeneralMemory generalMemory, ConcentrationSiteMemory concentrationSiteMemory) {
+    public CollectionSiteMemory(
+        GeneralMemory generalMemory, 
+        ConcentrationSiteMemory concentrationSiteMemory, 
+        MusuemMemory musuemMemory,
+        PartiesMemory partiesMemory) {
         masterThief = null;
         this.generalMemory = generalMemory;
         this.concentrationSiteMemory = concentrationSiteMemory;
+        this.musuemMemory = musuemMemory;
+        this.partiesMemory = partiesMemory;
         access = new Semaphore();
         access.up();
         wait = new Semaphore();
@@ -37,8 +48,6 @@ public class CollectionSiteMemory {
     }
 
     public boolean startOperations() {
-        int numAvailableThieves;
-
         access.down();
         LOGGER.info("[MT] Starting Operations...");
         if (masterThief == null) {
@@ -46,17 +55,14 @@ public class CollectionSiteMemory {
         }
         masterThief.setState(ThiefState.DECIDING_WHAT_TO_DO);
         generalMemory.setMasterThiefState(ThiefState.DECIDING_WHAT_TO_DO);
-
-
         while (generalMemory.isHeistInProgres()) {
-            if (generalMemory.getNumParties() == HeistConstants.MAX_NUM_PARTIES) {
+            if (partiesMemory.getNumActiveParties() == HeistConstants.MAX_NUM_PARTIES) {
                 takeARest();
             }
             if (appraiseSit()) {
                 prepareAssaultParty();
             }
         }
-
         sumUpResults();
         access.up();
         return true;
@@ -72,35 +78,36 @@ public class CollectionSiteMemory {
             wait.down();
             numAvailableThieves += 1;
         }
-        
         //wait.down();
         return true;
     }
 
     public boolean prepareAssaultParty() {
-        int numConfirmedThieves;
+        int numConfirmedThieves, partyId, availableThief;
 
         LOGGER.info("[MT] Preparing Assault Party");
         masterThief.setState(ThiefState.ASSEMBLING_A_GROUP);
         generalMemory.setMasterThiefState(ThiefState.ASSEMBLING_A_GROUP);
-
+        partyId = partiesMemory.createParty();
         for (int i = 0; i < HeistConstants.PARTY_SIZE; i++) {
-            concentrationSiteMemory.getAvailableThief();
+            availableThief = concentrationSiteMemory.getAvailableThief();
+            concentrationSiteMemory.addThiefToParty(availableThief, partyId);
         }
-        
         numConfirmedThieves = 0;
         while (numConfirmedThieves < HeistConstants.PARTY_SIZE) {
             assemble.down();
             numConfirmedThieves += 1;
             LOGGER.info("[MT] Thief confirmed (" + numConfirmedThieves + ")");
         }
-        generalMemory.incrementParties();
-        sendAssaultParty();
+        sendAssaultParty(partyId);
         return true;
     }
 
-    public boolean sendAssaultParty() {
+    public boolean sendAssaultParty(int partyId) {
         LOGGER.info("[MT] Sending assault party");
+        partiesMemory.startParty(partyId);
+        masterThief.setState(ThiefState.DECIDING_WHAT_TO_DO);
+        generalMemory.setMasterThiefState(ThiefState.DECIDING_WHAT_TO_DO);
         return true;
     }
 
