@@ -22,7 +22,6 @@ public class MemQueue<T> {
     public T dequeue() {
         T object = null;
         if (!isEmpty()) {
-
             object = this.array[front];
             front = (front + 1) % array.length;
             size -= 1;
@@ -30,16 +29,16 @@ public class MemQueue<T> {
         return object;
     }
 
-    public T peek() {
-        T object = null;
-        if (!isEmpty()) {
-            return this.array[front];
-        }
-        return object;
+    public T[] array() {
+        return array;
     }
 
     public int size() {
         return this.size;
+    }
+
+    public T[] getArray() {
+        return this.array;
     }
 
     private boolean isFull() {
@@ -49,5 +48,6 @@ public class MemQueue<T> {
     private boolean isEmpty() {
         return (size == 0);
     }
+
 }
 

@@ -86,6 +86,7 @@ public class ConcentrationSiteMemory {
         ordinaryThieves[thiefId].setPartyId(partyId);
         partiesMemory.addThiefToParty(partyId, ordinaryThieves[thiefId]);
         access.up();
+        wait[thiefId].up();
     }
 
     public int getNumAvailableThieves() {
@@ -100,7 +101,6 @@ public class ConcentrationSiteMemory {
         int availableThief;
         access.down();
         availableThief = availableThieves.dequeue();
-        wait[availableThief].up();
         access.up();
         return availableThief;
     }

@@ -48,11 +48,16 @@ public class OrdinaryThief extends Thief
         return this.partyId;
     }
 
-    public void move(int distance) {
-        this.position = distance;
-    }
-
     public int getMaxDisplacement() {
         return this.md;
+    }
+
+    public int getPosition() {
+        return this.position;
+    }
+
+    public int move(int increment) {
+        this.position += increment;
+        return this.position;
     }
 }

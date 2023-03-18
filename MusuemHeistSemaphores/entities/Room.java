@@ -39,4 +39,8 @@ public class Room {
     public int getId() {
         return id;
     }
+
+    public int getLocation() {
+        return this.distance;
+    }
 }

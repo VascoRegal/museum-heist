@@ -29,5 +29,9 @@ public class MusuemMemory {
         return null;
     }
 
+    public int getRoomLocation(int roomId) {
+        return this.rooms[roomId].getLocation();
+    }
+
     
 }
