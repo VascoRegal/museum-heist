@@ -56,29 +56,26 @@ public class ConcentrationSiteMemory {
         if (ordinaryThieves[ordinaryThiefId] == null) {
             ordinaryThieves[ordinaryThiefId] = (OrdinaryThief) Thread.currentThread();
         }
-        LOGGER.info("[OT" + ordinaryThiefId + "] Am I needed?");
+        // LOGGER.info("[OT" + ordinaryThiefId + "] Am I needed?");
         ordinaryThieves[ordinaryThiefId].setState(ThiefState.CONCENTRATION_SITE);
         generalMemory.setOrdinaryThiefState(ordinaryThiefId, ThiefState.CONCENTRATION_SITE);
         availableThieves.enqueue(ordinaryThiefId);
-        access.up();
         collectionSiteMemory.notifyAvailable();
+        access.up();
         wait[ordinaryThiefId].down();
         return true;
         
     }
 
-    public boolean prepareExcursion() {
+    public int prepareExcursion() {
         int ordinaryThiefId;
         
         access.down();
         ordinaryThiefId = ((OrdinaryThief) Thread.currentThread()).getThiefId();
-        LOGGER.info("[OT" + ordinaryThiefId + "] Preparing for excursion!");
+        // LOGGER.info("[OT" + ordinaryThiefId + "] Preparing for excursion!");
         collectionSiteMemory.confirmParty();
-        ordinaryThieves[ordinaryThiefId].setState(ThiefState.CRAWLING_INWARDS);
-        generalMemory.setOrdinaryThiefState(ordinaryThiefId, ThiefState.CRAWLING_INWARDS);
         access.up();
-        partiesMemory.thiefReady(ordinaryThiefId, ordinaryThieves[ordinaryThiefId].getPartyId());
-        return true;
+        return  ordinaryThieves[ordinaryThiefId].getPartyId();
     }
 
     public void addThiefToParty(int thiefId, int partyId) {

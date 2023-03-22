@@ -2,7 +2,10 @@ package entities;
 
 import consts.HeistConstants;
 import structs.Utils;
+import shared.CollectionSiteMemory;
 import shared.ConcentrationSiteMemory;
+import shared.MusuemMemory;
+import shared.PartiesMemory;
 
 public class OrdinaryThief extends Thief
 {
@@ -12,8 +15,18 @@ public class OrdinaryThief extends Thief
     private ThiefPartyState partyState;
     private int partyId;
     private ConcentrationSiteMemory concentrationSiteMemory;
+    private PartiesMemory partiesMemory;
+    private MusuemMemory musuemMemory;
+    private CollectionSiteMemory collectionSiteMemory;
 
-    public OrdinaryThief(int id, ConcentrationSiteMemory concentrationSiteMemory) {
+    public OrdinaryThief(
+        int id, 
+        ConcentrationSiteMemory concentrationSiteMemory, 
+        PartiesMemory partiesMemory, 
+        MusuemMemory musuemMemory,
+        CollectionSiteMemory collectionSiteMemory
+    )
+    {
         super(id);
         this.position = 0;
         this.md = Utils.randIntInRange(HeistConstants.MIN_THIEF_MD, HeistConstants.MAX_THIEF_MD);
@@ -22,13 +35,18 @@ public class OrdinaryThief extends Thief
         this.partyId = -1;
         this.hasCanvas = 0;
         this.concentrationSiteMemory = concentrationSiteMemory;
+        this.musuemMemory = musuemMemory;
+        this.partiesMemory = partiesMemory;
+        this.collectionSiteMemory = collectionSiteMemory;
     }
 
     public void run() {
-        while (true) {
-            if (concentrationSiteMemory.amINeeded()) {
-                concentrationSiteMemory.prepareExcursion();
-            }
+        while (concentrationSiteMemory.amINeeded()) {
+            partyId = concentrationSiteMemory.prepareExcursion();
+            partiesMemory.crawlingIn();
+            musuemMemory.rollACanvas(partyId);
+            partiesMemory.crawlingOut();
+            collectionSiteMemory.handACanvas();
         }
     }
 

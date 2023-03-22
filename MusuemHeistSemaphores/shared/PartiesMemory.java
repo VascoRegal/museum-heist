@@ -13,7 +13,7 @@ public class PartiesMemory {
 
     private final Semaphore access;
 
-    private final Semaphore [][] proceed;
+    private final Semaphore [][] proceed; 
 
     private final Party [] parties;
 
@@ -61,24 +61,45 @@ public class PartiesMemory {
     
     public void addThiefToParty(int partyId, OrdinaryThief thief) {
         access.down();
-        parties[partyId].enqueue(thief);
+        parties[partyId].join(thief);
         access.up();
-    }
-
-    public void thiefReady(int thiefId, int partyId) {
-        proceed[partyId][thiefId].down();
-        crawlingIn();
     }
 
     public void startParty(int partyId) {
-        access.up();
-        parties[partyId].dequeue();
-        access.down();
         proceed[partyId][0].up();
     }
 
     public boolean crawlingIn() {
-        access.down();
+        OrdinaryThief currentThief, closestThief;
+        int partyId;
+        int roomLocation;
+        
+        currentThief = ((OrdinaryThief) Thread.currentThread());
+        partyId = currentThief.getPartyId();
+        roomLocation = musuemMemory.getRoomLocation(parties[partyId].getRoomId());
+        while (true) {
+            proceed[partyId][currentThief.getThiefId()].down();
+            access.up();
+            System.out.println("[PARTY " + partyId + "] OT" + currentThief.getThiefId() + " (MD="+ currentThief.getMaxDisplacement() + ") moving in...");
+            while (parties[partyId].canIMove(currentThief)) {
+                System.out.println("[PARTY " + partyId + "] OT" + currentThief.getThiefId() + " (MD="+ currentThief.getMaxDisplacement() + ") can Move!");
+                parties[partyId].move(currentThief);
+                System.out.println("[PARTY " + partyId + "] OT" + currentThief.getThiefId() + " (MD="+ currentThief.getMaxDisplacement() + ") moved to position " + currentThief.getPosition());
+            }
+            System.out.println("[PARTY " + partyId + "] OT" + currentThief.getThiefId() + " (MD="+ currentThief.getMaxDisplacement() + ") Can no longer move");
+            closestThief = parties[partyId].getNext(currentThief);
+            System.out.println("[PARTY " + partyId + "] OT" + currentThief.getThiefId() + " (MD="+ currentThief.getMaxDisplacement() + ") Notifiying OT" + closestThief.getThiefId() + " to start moving");
+            proceed[partyId][closestThief.getThiefId()].up();
+            if (currentThief.getPosition() >= roomLocation) {
+                System.out.println("perdi o jogo");
+                break;
+            }
+            access.down();
+        }
+        return true;
+    }
+
+    public boolean crawlingOut() {
         OrdinaryThief currentThief, hThief, closestThief;
         int partyId;
         int distanceIncrement, roomLocation;
@@ -86,31 +107,7 @@ public class PartiesMemory {
         currentThief = ((OrdinaryThief) Thread.currentThread());
         partyId = currentThief.getPartyId();
 
-        LOGGER.info("[PARTY " + partyId + "] OT" + currentThief.getThiefId() + " (MD="+ currentThief.getMaxDisplacement() + ") moving in...");
-
-        roomLocation = musuemMemory.getRoomLocation(parties[partyId].getRoomId());
-        closestThief = parties[partyId].getClosest(currentThief);
-
-
-        if ((closestThief.getPosition() + currentThief.getMaxDisplacement()) > HeistConstants.MAX_CRAWLING_DISTANCE) {
-            distanceIncrement = HeistConstants.MAX_CRAWLING_DISTANCE - Math.abs(currentThief.getPosition() - closestThief.getPosition());
-        } else {
-            distanceIncrement = currentThief.getMaxDisplacement();
-        }
-
-        if ((currentThief.getPosition() + distanceIncrement) >= (roomLocation)) {
-            return false;
-        }
-
-        currentThief.move(distanceIncrement);
-        LOGGER.info("[PARTY " + partyId + "] OT" + currentThief.getThiefId() + " moved " + distanceIncrement + " units");
-        parties[partyId].enqueue(currentThief);
-        int nm = parties[partyId].dequeue().getThiefId();
-        LOGGER.info("[PARTY " + partyId + "] OT" + currentThief.getThiefId() + " Telling OT" + nm + " to move.");
-        proceed[partyId][nm].up();
-        access.up();
-        proceed[partyId][currentThief.getThiefId()].down();
-
-        return true;
+        // LOGGER.info("[PARTY " + partyId + "] OT" + currentThief.getThiefId() + " CRAWLING OUT.");
+        return false;
     }
 }

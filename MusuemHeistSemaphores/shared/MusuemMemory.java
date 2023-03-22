@@ -29,8 +29,18 @@ public class MusuemMemory {
         return null;
     }
 
+    public void setRoomState(int roomId, RoomState roomState) {
+        access.down();
+        rooms[roomId].setRoomState(roomState);
+        access.up();
+    }
+
     public int getRoomLocation(int roomId) {
         return this.rooms[roomId].getLocation();
+    }
+
+    public void rollACanvas(int partyId) {
+        System.out.println("we can roll it up");
     }
 
     

@@ -13,9 +13,25 @@ public class MasterThief extends Thief {
     }
 
     public void run() {
+
+        char action;
+        int partyId;
+
         collectionSiteMemory.startOperations();
+        //TODO: Assault ends condition
         while (true) {
-            collectionSiteMemory.prepareAssaultParty();
+            action = collectionSiteMemory.appraiseSit();
+            System.out.println("ACTION : " + action);
+            switch (action) {
+                case 'p':
+                    partyId = collectionSiteMemory.prepareAssaultParty();
+                    collectionSiteMemory.sendAssaultParty(partyId);
+                    break;
+                case 'r':
+                    collectionSiteMemory.takeARest();
+                    collectionSiteMemory.collectACanvas();
+                    break;
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package entities;
 
 import consts.HeistConstants;
+import structs.MemPartyArray;
 import structs.MemQueue;
 
 public class Party {
@@ -9,42 +10,37 @@ public class Party {
 
     private final int roomId;
 
-    private final MemQueue<OrdinaryThief> thieves;
+    private final  MemPartyArray partyArray;
 
     public Party(int id, int roomId) {
         this.id = id;
         this.roomId = roomId;
-        thieves = new MemQueue<OrdinaryThief>(new OrdinaryThief[HeistConstants.PARTY_SIZE]);
-    }
 
-    public void enqueue(OrdinaryThief thief) {
-        thieves.enqueue(thief);
-    }
+        OrdinaryThief[] thieves = new OrdinaryThief[HeistConstants.PARTY_SIZE];
+        for (int i = 0; i < HeistConstants.PARTY_SIZE; i++ ) {
+            thieves[i] = null;
+        }
 
-    public OrdinaryThief dequeue() {
-        return thieves.dequeue();
+        partyArray = new MemPartyArray(thieves);
     }
 
     public int getRoomId() {
         return this.roomId;
     }
 
-    public OrdinaryThief getClosest(OrdinaryThief thief) {
-        int i, distance;
-        OrdinaryThief[] thievesArray;
-        OrdinaryThief closest;
+    public OrdinaryThief getNext(OrdinaryThief ordinaryThief) {
+        return partyArray.getNext(ordinaryThief);
+    }
 
-        thievesArray = thieves.getArray();
-        closest = null;
+    public void join(OrdinaryThief ordinaryThief) {
+        partyArray.join(ordinaryThief);
+    }
 
-        for (i = 0; i < thievesArray.length; i++) {
-            if (thief.getThiefId() != thievesArray[i].getThiefId()) {
-                distance = thief.getPosition() - thievesArray[i].getPosition();
-                if (closest == null || distance < closest.getPosition()) {
-                    closest = thievesArray[i];
-                }
-            }
-        }
-        return closest;
+    public boolean canIMove(OrdinaryThief ordinaryThief) {
+        return partyArray.canMove(ordinaryThief);
+    }
+
+    public void move(OrdinaryThief ordinaryThief) {
+        partyArray.bestMove(ordinaryThief);
     }
 }

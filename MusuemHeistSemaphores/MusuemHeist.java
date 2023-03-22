@@ -26,15 +26,15 @@ public class MusuemHeist {
         concentrationSite.setCollectionSiteMemory(collectionSite);
 
         for (int i = 0; i < HeistConstants.NUM_THIEVES - 1; i++) {
-            ordinaryThieves[i] = new OrdinaryThief(i, concentrationSite);
+            ordinaryThieves[i] = new OrdinaryThief(i, concentrationSite, partiesMemory, musuemMemory, collectionSite);
         }
         masterThief = new MasterThief(0, collectionSite);
 
         masterThief.start();
-        LOGGER.info("Started Master Thief");
+        // LOGGER.info("Started Master Thief");
         for (int i = 0; i < HeistConstants.NUM_THIEVES - 1; i++) {
             ordinaryThieves[i].start();
-            LOGGER.info("Started Ordinary Thief " + i);
+            // LOGGER.info("Started Ordinary Thief " + i);
         }
 
     }

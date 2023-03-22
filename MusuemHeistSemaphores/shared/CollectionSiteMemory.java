@@ -49,77 +49,87 @@ public class CollectionSiteMemory {
 
     public boolean startOperations() {
         access.down();
-        LOGGER.info("[MT] Starting Operations...");
+        // LOGGER.info("[MT] Starting Operations...");
         if (masterThief == null) {
             masterThief = (MasterThief) Thread.currentThread();
         }
-        masterThief.setState(ThiefState.DECIDING_WHAT_TO_DO);
-        generalMemory.setMasterThiefState(ThiefState.DECIDING_WHAT_TO_DO);
-        while (generalMemory.isHeistInProgres()) {
-            if (partiesMemory.getNumActiveParties() == HeistConstants.MAX_NUM_PARTIES) {
-                takeARest();
-            }
-            if (appraiseSit()) {
-                prepareAssaultParty();
-            }
-        }
-        sumUpResults();
+        masterThief.setState(ThiefState.PLANNING_THE_HEIST);
+        generalMemory.setMasterThiefState(ThiefState.PLANNING_THE_HEIST);
         access.up();
         return true;
     }
 
-    public boolean appraiseSit() {
-        LOGGER.info("[MT] Appraise Sitting");
-        
+    public char appraiseSit() {
+        char action;
         int numAvailableThieves;
 
-        numAvailableThieves = 0;
-        while (numAvailableThieves < HeistConstants.PARTY_SIZE) {
-            wait.down();
-            numAvailableThieves += 1;
+        access.down();
+        // LOGGER.info("[MT] Appraise Sitting");
+
+        masterThief.setState(ThiefState.DECIDING_WHAT_TO_DO);
+        generalMemory.setMasterThiefState(ThiefState.DECIDING_WHAT_TO_DO);
+
+
+        System.out.println("NUM ACTIVE PARTIES: " + partiesMemory.getNumActiveParties() + " / " + HeistConstants.MAX_NUM_PARTIES);
+        if (partiesMemory.getNumActiveParties() == HeistConstants.MAX_NUM_PARTIES) {
+            action = 'r';
         }
-        //wait.down();
-        return true;
+        else  {
+            numAvailableThieves = 0;
+            while (numAvailableThieves < HeistConstants.PARTY_SIZE) {
+                wait.down();
+                numAvailableThieves += 1;
+            }
+            action = 'p';
+        }
+        access.up();
+
+        return action;
     }
 
-    public boolean prepareAssaultParty() {
+    public int prepareAssaultParty() {
         int numConfirmedThieves, partyId, availableThief;
 
-        LOGGER.info("[MT] Preparing Assault Party");
+        // LOGGER.info("[MT] Preparing Assault Party");
         masterThief.setState(ThiefState.ASSEMBLING_A_GROUP);
         generalMemory.setMasterThiefState(ThiefState.ASSEMBLING_A_GROUP);
         partyId = partiesMemory.createParty();
+
         for (int i = 0; i < HeistConstants.PARTY_SIZE; i++) {
             availableThief = concentrationSiteMemory.getAvailableThief();
             concentrationSiteMemory.addThiefToParty(availableThief, partyId);
         }
+
         numConfirmedThieves = 0;
         while (numConfirmedThieves < HeistConstants.PARTY_SIZE) {
             assemble.down();
             numConfirmedThieves += 1;
-            LOGGER.info("[MT] Thief confirmed (" + numConfirmedThieves + ")");
+            // LOGGER.info("[MT] Thief confirmed (" + numConfirmedThieves + ")");
         }
-        sendAssaultParty(partyId);
-        return true;
+        return partyId;
     }
 
     public boolean sendAssaultParty(int partyId) {
-        LOGGER.info("[MT] Sending assault party");
+        // LOGGER.info("[MT] Sending assault party");
         partiesMemory.startParty(partyId);
-        masterThief.setState(ThiefState.DECIDING_WHAT_TO_DO);
-        generalMemory.setMasterThiefState(ThiefState.DECIDING_WHAT_TO_DO);
         return true;
     }
 
     public boolean takeARest() {
-        LOGGER.info("[MT] Taking a rest.");
+        access.up();
+        // LOGGER.info("[MT] Taking a rest.");
         masterThief.setState(ThiefState.WAITING_FOR_GROUP_ARRIVAL);
         generalMemory.setMasterThiefState(ThiefState.WAITING_FOR_GROUP_ARRIVAL);    
-        arrival.down();
+        access.down();
+        wait.down();
         return true;
     }
 
     public boolean collectACanvas() {
+        return true;
+    }
+
+    public boolean handACanvas() {
         return true;
     }
 
