@@ -17,7 +17,7 @@ public class GeneralMemory {
 
     public GeneralMemory() {
         ordinaryThiefState = new ThiefState [HeistConstants.NUM_THIEVES];
-        for (int i=0; i < HeistConstants.NUM_THIEVES - 1; i++) {
+        for (int i=0; i < HeistConstants.NUM_THIEVES; i++) {
             ordinaryThiefState[i] = ThiefState.CONCENTRATION_SITE;
         }
         masterThiefState = ThiefState.PLANNING_THE_HEIST;

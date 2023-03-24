@@ -2,6 +2,7 @@ package structs;
 
 import consts.HeistConstants;
 import entities.OrdinaryThief;
+import entities.ThiefState;
 
 public class MemPartyArray {
     
@@ -38,80 +39,143 @@ public class MemPartyArray {
         }
     }
 
-    public OrdinaryThief getNext(OrdinaryThief thief) {
-        if (thief.getThiefId() == tail.getThiefId()) {
+    public OrdinaryThief getNext() {
+        OrdinaryThief currentThief;
+
+        currentThief = getCurrentThief();
+
+        if (currentThief.getThiefId() == tail.getThiefId()) {
             return head;
         } else {
-            return getClosest(thief);
+            return getClosest();
         }
     }
 
-    public OrdinaryThief getClosest(OrdinaryThief thief) {
+    public OrdinaryThief getClosest() {
         int i, curThiefPosition, curThiefDistance, minDistance;
-        OrdinaryThief closestThief;
+        OrdinaryThief currentThief, closestThief;
 
+        currentThief = getCurrentThief();
         closestThief = null;
-        curThiefPosition = thief.getPosition();
+        curThiefPosition = currentThief.getPosition();
         for (i = 0; i < HeistConstants.PARTY_SIZE; i++) {
-            if (thief.getThiefId() != data[i].getThiefId())
-            {
-                if (closestThief == null) {
-                    closestThief = data[i];
-                } else{
-                    curThiefDistance = Math.abs(curThiefPosition - data[i].getPosition());
-                    minDistance = Math.abs(curThiefPosition - closestThief.getPosition());
-                    if (curThiefDistance == minDistance) {
-                        if (thief.getPosition() > data[i].getPosition()) {
+            if (data[i].getThiefState() != currentThief.getThiefState() || currentThief.getThiefId() == data[i].getThiefId()) {
+                continue;
+            }
+
+            if (closestThief == null) {
+                closestThief = data[i];
+            } else{
+                curThiefDistance = Math.abs(curThiefPosition - data[i].getPosition());
+                minDistance = Math.abs(curThiefPosition - closestThief.getPosition());
+                if (curThiefDistance == minDistance) {
+                    if (currentThief.getThiefState() == ThiefState.CRAWLING_INWARDS) {
+                        if (currentThief.getPosition() > data[i].getPosition()) {
                             closestThief = data[i];
                         }
-                    }
-                    else if (curThiefDistance < minDistance) {
+                    } else if (currentThief.getPosition() < data[i].getPosition()) {
                         closestThief = data[i];
                     }
-                } 
-            }
+                }
+                else if (curThiefDistance < minDistance) {
+                    closestThief = data[i];
+                }
+            } 
+            
         }
-        System.out.println("[PARTYMEM] Party MEM determined that the closest theif to OT" + thief.getThiefId() + "(pos=" + thief.getPosition() + ") is OT" + closestThief.getThiefId() + "(pos =" + closestThief.getPosition() + ")" );
         return closestThief;
     }
 
-    public boolean canMove(OrdinaryThief thief) {
-        if (tail.getThiefId() == thief.getThiefId()) {
+    public boolean canMove() {
+        OrdinaryThief currentThief, closestThief;
+
+        currentThief = getCurrentThief();
+        if (tail.getThiefId() == currentThief.getThiefId()) {
             return true;
         }
-        return ( Math.abs(thief.getPosition() - getClosest(thief).getPosition()) < HeistConstants.MAX_CRAWLING_DISTANCE );
+        closestThief = getClosest();
+        return ( Math.abs(currentThief.getPosition() - closestThief.getPosition()) < HeistConstants.MAX_CRAWLING_DISTANCE );
     }
 
-    public void bestMove(OrdinaryThief thief) {
+    public void doBestMove() {
         int finalPosition, increment, minDistance;
-        OrdinaryThief newTail;
+        OrdinaryThief newTail, currentThief, closestThief;
 
-        if (tail.getThiefId() == thief.getThiefId()) {
-            increment =  Math.min(thief.getMaxDisplacement(), HeistConstants.MAX_CRAWLING_DISTANCE);
+        currentThief = getCurrentThief();
+        closestThief = getClosest();
+        if (closestThief == null) {
+            increment = currentThief.getMaxDisplacement();
+            if (currentThief.getThiefState() == ThiefState.CRAWLING_OUTWARDS) {
+                increment = - increment;
+            }
+
+            currentThief.move(increment);
+            tail = currentThief;
+            return;
+        }
+
+        if (tail.getThiefId() == currentThief.getThiefId()) {
+            increment =  Math.min(currentThief.getMaxDisplacement(), HeistConstants.MAX_CRAWLING_DISTANCE);
         } else 
         {
-            increment = Math.min(thief.getMaxDisplacement(), HeistConstants.MAX_CRAWLING_DISTANCE - (Math.abs(thief.getPosition() - getClosest(thief).getPosition())));
-        }
-        finalPosition = thief.move(increment);
-
-        if (finalPosition > head.getPosition()) {
-            head = thief;
+            increment = Math.min(currentThief.getMaxDisplacement(), HeistConstants.MAX_CRAWLING_DISTANCE - (Math.abs(currentThief.getPosition() - closestThief.getPosition())));
         }
 
-        if (thief.getThiefId() == tail.getThiefId()) {
+        if (currentThief.getThiefState() == ThiefState.CRAWLING_OUTWARDS) {
+            increment = - increment;
+        }
+
+        finalPosition = currentThief.move(increment);
+
+        if (currentThief.getThiefState() == ThiefState.CRAWLING_INWARDS) {
+            if (finalPosition > head.getPosition()) {
+                head = currentThief;
+            }
+        } else {
+            if (finalPosition < head.getPosition()) {
+                head = currentThief;
+            }
+        }
+
+
+        if (currentThief.getThiefId() == tail.getThiefId()) {
             newTail = tail;
             minDistance = tail.getPosition();
             for (int i = 0 ; i < HeistConstants.PARTY_SIZE; i++) {
-                if (thief.getThiefId() != data[i].getThiefId())
+                if (currentThief.getThiefId() != data[i].getThiefId())
                 {
-                    if (data[i].getPosition() < minDistance) {
-                        minDistance = data[i].getPosition();
-                        newTail = data[i];
+                    if (currentThief.getThiefState() == ThiefState.CRAWLING_INWARDS) {
+                        if (data[i].getPosition() < minDistance) {
+                            minDistance = data[i].getPosition();
+                            newTail = data[i];
+                        }
+                    } else {
+                        if (data[i].getPosition() > minDistance) {
+                            minDistance = data[i].getPosition();
+                            newTail = data[i];
+                        }
                     }
                 }
             }
             tail = newTail;
-            System.out.println("[TAIL] Determined the new tail : OT" + tail.getThiefId() + "(pos=" + tail.getPosition() + ")");
         }
     }
+
+    private OrdinaryThief getCurrentThief() {
+        return ((OrdinaryThief) Thread.currentThread());
+    }
+
+    public OrdinaryThief head() {
+        return this.head;
+    }
+
+    public OrdinaryThief tail() {
+        return this.tail;
+    }
+
+    public OrdinaryThief[] asArray() {
+        return data;
+    }
+
+    
 }

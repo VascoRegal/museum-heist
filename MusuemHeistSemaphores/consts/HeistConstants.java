@@ -7,10 +7,10 @@ public final class HeistConstants {
 	}
 
 
-	public static final int NUM_THIEVES = 7;
+	public static final int NUM_THIEVES = 6;
 	public static final int NUM_ROOMS = 5;
 	public static final int PARTY_SIZE = 3;
-	public static final int MAX_NUM_PARTIES = Math.floorDiv(NUM_THIEVES - 1, PARTY_SIZE);
+	public static final int MAX_NUM_PARTIES = Math.floorDiv(NUM_THIEVES, PARTY_SIZE);
 
 	public static final int MAX_CRAWLING_DISTANCE = 3;
 

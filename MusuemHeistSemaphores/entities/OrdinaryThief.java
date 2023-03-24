@@ -11,7 +11,7 @@ public class OrdinaryThief extends Thief
 {
     private int position;
     private int md;
-    private int hasCanvas;
+    private boolean hasCanvas;
     private ThiefPartyState partyState;
     private int partyId;
     private ConcentrationSiteMemory concentrationSiteMemory;
@@ -33,7 +33,7 @@ public class OrdinaryThief extends Thief
         this.state = ThiefState.CONCENTRATION_SITE;
         this.partyState = ThiefPartyState.AVAILABLE;
         this.partyId = -1;
-        this.hasCanvas = 0;
+        this.hasCanvas = false;
         this.concentrationSiteMemory = concentrationSiteMemory;
         this.musuemMemory = musuemMemory;
         this.partiesMemory = partiesMemory;
@@ -42,9 +42,11 @@ public class OrdinaryThief extends Thief
 
     public void run() {
         while (concentrationSiteMemory.amINeeded()) {
+            int room = -1;
+
             partyId = concentrationSiteMemory.prepareExcursion();
-            partiesMemory.crawlingIn();
-            musuemMemory.rollACanvas(partyId);
+            room = partiesMemory.crawlingIn();
+            musuemMemory.rollACanvas(room);
             partiesMemory.crawlingOut();
             collectionSiteMemory.handACanvas();
         }
@@ -72,6 +74,18 @@ public class OrdinaryThief extends Thief
 
     public int getPosition() {
         return this.position;
+    }
+
+    public void setPosition(int pos) {
+        this.position = pos;
+    }
+
+    public void handleCanvas() {
+        this.hasCanvas = ! this.hasCanvas;
+    }
+
+    public boolean hasCanvas() {
+        return this.hasCanvas;
     }
 
     public int move(int increment) {

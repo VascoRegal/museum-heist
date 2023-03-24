@@ -24,7 +24,11 @@ public abstract class Thief extends Thread {
         return this.id;
     }
 
-    public void setState(ThiefState state) {
+    public ThiefState getThiefState() {
+        return state;
+    }
+
+    public void setThiefState(ThiefState state) {
         this.state = state;
     }
 

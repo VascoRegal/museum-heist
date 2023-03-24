@@ -15,7 +15,7 @@ public class MusuemHeist {
     
     public static void main(String [] args) {
         
-        OrdinaryThief [] ordinaryThieves = new OrdinaryThief [HeistConstants.NUM_THIEVES - 1];
+        OrdinaryThief [] ordinaryThieves = new OrdinaryThief [HeistConstants.NUM_THIEVES];
         MasterThief masterThief = null;
 
         GeneralMemory generalMemory = new GeneralMemory();
@@ -25,16 +25,26 @@ public class MusuemHeist {
         CollectionSiteMemory collectionSite = new CollectionSiteMemory(generalMemory, concentrationSite, musuemMemory, partiesMemory);
         concentrationSite.setCollectionSiteMemory(collectionSite);
 
-        for (int i = 0; i < HeistConstants.NUM_THIEVES - 1; i++) {
+        for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
             ordinaryThieves[i] = new OrdinaryThief(i, concentrationSite, partiesMemory, musuemMemory, collectionSite);
         }
-        masterThief = new MasterThief(0, collectionSite);
+        masterThief = new MasterThief(0, collectionSite, generalMemory);
 
         masterThief.start();
         // LOGGER.info("Started Master Thief");
-        for (int i = 0; i < HeistConstants.NUM_THIEVES - 1; i++) {
+        for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
             ordinaryThieves[i].start();
             // LOGGER.info("Started Ordinary Thief " + i);
+        }
+
+        try {
+            masterThief.join();
+            for (int i=0; i < HeistConstants.NUM_THIEVES; i++) {
+                ordinaryThieves[i].join();
+            }
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
     }

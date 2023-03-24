@@ -32,18 +32,18 @@ public class ConcentrationSiteMemory {
         GeneralMemory generalMemory,
         PartiesMemory partiesMemory
         ) {
-        ordinaryThieves = new OrdinaryThief [HeistConstants.NUM_THIEVES - 1];
-        for (int i = 0; i < HeistConstants.NUM_THIEVES - 1; i++) {
+        ordinaryThieves = new OrdinaryThief [HeistConstants.NUM_THIEVES];
+        for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
             ordinaryThieves[i] = null;
         }
         this.generalMemory = generalMemory;
         this.collectionSiteMemory = null;
         this.partiesMemory = partiesMemory;
-        this.availableThieves = new MemQueue<Integer>(new Integer[HeistConstants.NUM_THIEVES - 1]);
+        this.availableThieves = new MemQueue<Integer>(new Integer[HeistConstants.NUM_THIEVES]);
         access = new Semaphore();
         access.up();
-        wait = new Semaphore [HeistConstants.NUM_THIEVES - 1];
-        for (int i = 0; i < HeistConstants.NUM_THIEVES - 1; i++) {
+        wait = new Semaphore [HeistConstants.NUM_THIEVES];
+        for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
             wait[i] = new Semaphore();
         }
     }
@@ -57,12 +57,17 @@ public class ConcentrationSiteMemory {
             ordinaryThieves[ordinaryThiefId] = (OrdinaryThief) Thread.currentThread();
         }
         // LOGGER.info("[OT" + ordinaryThiefId + "] Am I needed?");
-        ordinaryThieves[ordinaryThiefId].setState(ThiefState.CONCENTRATION_SITE);
+        ordinaryThieves[ordinaryThiefId].setThiefState(ThiefState.CONCENTRATION_SITE);
         generalMemory.setOrdinaryThiefState(ordinaryThiefId, ThiefState.CONCENTRATION_SITE);
         availableThieves.enqueue(ordinaryThiefId);
         collectionSiteMemory.notifyAvailable();
         access.up();
         wait[ordinaryThiefId].down();
+
+        if (!generalMemory.isHeistInProgres()) {
+            return false;
+        }
+
         return true;
         
     }
@@ -104,5 +109,11 @@ public class ConcentrationSiteMemory {
 
     public void setCollectionSiteMemory(CollectionSiteMemory collectionSiteMemory) {
         this.collectionSiteMemory = collectionSiteMemory;
+    }
+
+    public void notifyEndOfHeist() {
+        for (int i = 0; i < HeistConstants.NUM_THIEVES; i++ ) {
+            wait[i].up();
+        }
     }
 }

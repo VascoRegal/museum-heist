@@ -1,15 +1,19 @@
 package entities;
 
 import shared.CollectionSiteMemory;
+import shared.GeneralMemory;
 
 public class MasterThief extends Thief {
 
     private final CollectionSiteMemory collectionSiteMemory;
 
-    public MasterThief(int id, CollectionSiteMemory collectionSiteMemory) {
+    private final GeneralMemory generalMemory;
+
+    public MasterThief(int id, CollectionSiteMemory collectionSiteMemory, GeneralMemory generalMemory) {
         super(id);
         this.state = ThiefState.PLANNING_THE_HEIST;
         this.collectionSiteMemory = collectionSiteMemory;
+        this.generalMemory = generalMemory;
     }
 
     public void run() {
@@ -18,10 +22,8 @@ public class MasterThief extends Thief {
         int partyId;
 
         collectionSiteMemory.startOperations();
-        //TODO: Assault ends condition
-        while (true) {
+        while (generalMemory.isHeistInProgres()) {
             action = collectionSiteMemory.appraiseSit();
-            System.out.println("ACTION : " + action);
             switch (action) {
                 case 'p':
                     partyId = collectionSiteMemory.prepareAssaultParty();
@@ -31,7 +33,10 @@ public class MasterThief extends Thief {
                     collectionSiteMemory.takeARest();
                     collectionSiteMemory.collectACanvas();
                     break;
+                case 's':
+                    break;
             }
         }
+        collectionSiteMemory.sumUpResults();
     }
 }

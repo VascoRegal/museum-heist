@@ -50,4 +50,10 @@ public class Semaphore
         }
         else val += 1;
    }
+
+   public synchronized void release ()
+   {
+      numbBlockThreads = 0;
+      val = 0;
+   }
 }

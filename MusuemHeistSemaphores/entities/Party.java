@@ -2,7 +2,6 @@ package entities;
 
 import consts.HeistConstants;
 import structs.MemPartyArray;
-import structs.MemQueue;
 
 public class Party {
     
@@ -24,12 +23,20 @@ public class Party {
         partyArray = new MemPartyArray(thieves);
     }
 
+    public int getFirst() {
+        return partyArray.head().getThiefId();
+    }
+
+    public int getLast() {
+        return partyArray.tail().getThiefId();
+    }
+
     public int getRoomId() {
         return this.roomId;
     }
 
-    public OrdinaryThief getNext(OrdinaryThief ordinaryThief) {
-        return partyArray.getNext(ordinaryThief);
+    public OrdinaryThief getNext() {
+        return partyArray.getNext();
     }
 
     public void join(OrdinaryThief ordinaryThief) {
@@ -37,10 +44,10 @@ public class Party {
     }
 
     public boolean canIMove(OrdinaryThief ordinaryThief) {
-        return partyArray.canMove(ordinaryThief);
+        return partyArray.canMove();
     }
 
     public void move(OrdinaryThief ordinaryThief) {
-        partyArray.bestMove(ordinaryThief);
+        partyArray.doBestMove();
     }
 }

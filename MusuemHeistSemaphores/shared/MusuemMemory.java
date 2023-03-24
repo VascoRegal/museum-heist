@@ -1,6 +1,7 @@
 package shared;
 
 import consts.HeistConstants;
+import entities.OrdinaryThief;
 import entities.Room;
 import entities.RoomState;
 import structs.Semaphore;
@@ -39,9 +40,24 @@ public class MusuemMemory {
         return this.rooms[roomId].getLocation();
     }
 
-    public void rollACanvas(int partyId) {
-        System.out.println("we can roll it up");
+    public void rollACanvas(int roomId) {
+        OrdinaryThief currentThief;
+        Room targetRoom;
+
+        access.down();
+        currentThief = ((OrdinaryThief) Thread.currentThread());
+        targetRoom = rooms[roomId];
+
+        if (!targetRoom.isEmpty()) {
+            targetRoom.removePainting();
+            currentThief.handleCanvas();
+        }
+        access.up();
     }
 
-    
+    public void markRoomAs(int roomId, RoomState state) {
+        access.down();
+        rooms[roomId].setRoomState(state);
+        access.up();
+    }    
 }
