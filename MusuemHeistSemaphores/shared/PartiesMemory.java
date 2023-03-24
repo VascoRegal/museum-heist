@@ -22,10 +22,13 @@ public class PartiesMemory {
 
     private final MusuemMemory musuemMemory;
 
+    private final GeneralMemory generalMemory;
+
     private int numActiveParties;
 
-    public PartiesMemory(MusuemMemory musuemMemory) {
+    public PartiesMemory(MusuemMemory musuemMemory, GeneralMemory generalMemory) {
         this.musuemMemory = musuemMemory;
+        this.generalMemory = generalMemory;
         proceed = new Semaphore[HeistConstants.MAX_NUM_PARTIES][HeistConstants.NUM_THIEVES];
         parties = new Party[HeistConstants.MAX_NUM_PARTIES];
         for (int i = 0; i < HeistConstants.MAX_NUM_PARTIES; i++) {
@@ -34,7 +37,7 @@ public class PartiesMemory {
                 proceed[i][j] = new Semaphore();
             }
         }
-
+        generalMemory.setParties(parties);
         partyAccess = new Semaphore[HeistConstants.MAX_NUM_PARTIES];
         for (int i = 0; i < HeistConstants.MAX_NUM_PARTIES; i++) {
             partyAccess[i] = new Semaphore();
@@ -54,6 +57,7 @@ public class PartiesMemory {
                 partyId = i;
                 numActiveParties++;
                 generalAccess.up();
+                generalMemory.setParties(parties);
                 return partyId;
             }
         }
@@ -65,12 +69,11 @@ public class PartiesMemory {
         generalAccess.down();
         parties[partyId] = null;
         numActiveParties--;
-        
         for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
             proceed[partyId][i].release();
         }
-
         generalAccess.up();
+        generalMemory.setParties(parties);
     }
 
     public int getNumActiveParties() {

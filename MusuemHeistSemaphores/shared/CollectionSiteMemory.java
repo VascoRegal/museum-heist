@@ -101,12 +101,12 @@ public class CollectionSiteMemory {
     public char appraiseSit() {
         char action;
         int numAvailableThieves, numActiveParties;
+        generalMemory.logInternalState();
         access.down();
         // LOGGER.info("[MT] Appraise Sitting");
 
         masterThief.setThiefState(ThiefState.DECIDING_WHAT_TO_DO);
         generalMemory.setMasterThiefState(ThiefState.DECIDING_WHAT_TO_DO);
-
         numActiveParties = partiesMemory.getNumActiveParties();
 
         if (totalClearedRooms == HeistConstants.NUM_ROOMS && numActiveParties == 0) 

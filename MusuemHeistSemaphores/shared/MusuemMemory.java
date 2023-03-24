@@ -8,17 +8,21 @@ import structs.Semaphore;
 
 public class MusuemMemory {
     
+    private final GeneralMemory generalMemory;
+
     private final Semaphore access;
 
     private final Room [] rooms;
 
-    public MusuemMemory() {
+    public MusuemMemory(GeneralMemory generalMemory) {
+        this.generalMemory = generalMemory;
         access = new Semaphore();
         access.up();
         rooms = new Room [HeistConstants.NUM_ROOMS];
         for (int i=0; i < HeistConstants.NUM_ROOMS; i++) {
             rooms[i] = new Room(i);
         }
+        this.generalMemory.setRooms(rooms);
     }
 
     public Room findNonClearedRoom() {

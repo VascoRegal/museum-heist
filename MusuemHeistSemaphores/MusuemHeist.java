@@ -19,8 +19,8 @@ public class MusuemHeist {
         MasterThief masterThief = null;
 
         GeneralMemory generalMemory = new GeneralMemory();
-        MusuemMemory musuemMemory = new MusuemMemory();
-        PartiesMemory partiesMemory = new PartiesMemory(musuemMemory);
+        MusuemMemory musuemMemory = new MusuemMemory(generalMemory);
+        PartiesMemory partiesMemory = new PartiesMemory(musuemMemory, generalMemory);
         ConcentrationSiteMemory concentrationSite = new ConcentrationSiteMemory(generalMemory, partiesMemory);
         CollectionSiteMemory collectionSite = new CollectionSiteMemory(generalMemory, concentrationSite, musuemMemory, partiesMemory);
         concentrationSite.setCollectionSiteMemory(collectionSite);
@@ -28,7 +28,9 @@ public class MusuemHeist {
         for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
             ordinaryThieves[i] = new OrdinaryThief(i, concentrationSite, partiesMemory, musuemMemory, collectionSite);
         }
+        generalMemory.setOrdinaryThieves(ordinaryThieves);
         masterThief = new MasterThief(0, collectionSite, generalMemory);
+        generalMemory.setMasterThief(masterThief);
 
         masterThief.start();
         // LOGGER.info("Started Master Thief");

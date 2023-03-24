@@ -50,4 +50,8 @@ public class Party {
     public void move(OrdinaryThief ordinaryThief) {
         partyArray.doBestMove();
     }
+
+    public OrdinaryThief[] memebersAsArray() {
+        return partyArray.asArray();
+    }
 }

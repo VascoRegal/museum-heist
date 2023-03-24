@@ -28,6 +28,10 @@ public class Room {
         return this.state;
     }
 
+    public int getNumHangingPaintings() {
+        return numPaintings;
+    }
+
     public void removePainting() {
         numPaintings--;
     }
