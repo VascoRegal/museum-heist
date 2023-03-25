@@ -3,11 +3,32 @@ package entities;
 import shared.CollectionSiteMemory;
 import shared.GeneralMemory;
 
+/**
+ *  MasterThief class
+ * 
+ */
+
 public class MasterThief extends Thief {
+
+    /**
+     *   Reference to the Collection Site Memory
+     */
 
     private final CollectionSiteMemory collectionSiteMemory;
 
+    /**
+     *   Reference to the General Memory
+     */
+
     private final GeneralMemory generalMemory;
+
+    /**
+     *  Collection Site memory instantiation.
+     *    
+     *    @param id thief identification
+     *    @param generalMemory general memory reference
+     *    @param collectionSiteMemory collection site memory reference
+     */
 
     public MasterThief(int id, CollectionSiteMemory collectionSiteMemory, GeneralMemory generalMemory) {
         super(id);
@@ -16,34 +37,38 @@ public class MasterThief extends Thief {
         this.generalMemory = generalMemory;
     }
 
+    /**
+     *  Main lifecycle
+     * 
+     */
     public void run() {
 
         char action;
         int partyId;
 
-        collectionSiteMemory.startOperations();
-        while (generalMemory.isHeistInProgres()) {
-            action = collectionSiteMemory.appraiseSit();
-            switch (action) {
-                case 'p':
+        collectionSiteMemory.startOperations();                             // start the operations
+        while (generalMemory.isHeistInProgres()) {                          // while heist is running
+            action = collectionSiteMemory.appraiseSit();                    // decide what action to do next
+            switch (action) {           
+                case 'p':                                                   // 'p' - create a party
                     generalMemory.logInternalState();
-                    partyId = collectionSiteMemory.prepareAssaultParty();
+                    partyId = collectionSiteMemory.prepareAssaultParty();   // prepare it
                     generalMemory.logInternalState();
-                    collectionSiteMemory.sendAssaultParty(partyId);
+                    collectionSiteMemory.sendAssaultParty(partyId);         // send it when ready
                     generalMemory.logInternalState();
                     break;
-                case 'r':
+                case 'r':                                                   // rest
+                    generalMemory.logInternalState();   
+                    collectionSiteMemory.takeARest();                       // wait for thieves arrival
                     generalMemory.logInternalState();
-                    collectionSiteMemory.takeARest();
-                    generalMemory.logInternalState();
-                    collectionSiteMemory.collectACanvas();
+                    collectionSiteMemory.collectACanvas();                  // awake to collect canvas
                     generalMemory.logInternalState();
                     break;
                 case 's':
                     break;
             }
         }
-        collectionSiteMemory.sumUpResults();
+        collectionSiteMemory.sumUpResults();                                // sum up and present the results
         generalMemory.logInternalState();
     }
 }

@@ -230,8 +230,8 @@ public class PartiesMemory {
             proceed[partyId][currentThief.getThiefId()].down();
             partyAccess[partyId].down();
             // generalMemorylogInternalState();
-            while (parties[partyId].canIMove(currentThief) && currentThief.getPosition() < roomLocation) {
-                parties[partyId].move(currentThief);
+            while (parties[partyId].canIMove() && currentThief.getPosition() < roomLocation) {
+                parties[partyId].move();
             }
             closestThief = parties[partyId].getNext();
 
@@ -273,8 +273,8 @@ public class PartiesMemory {
             proceed[partyId][currentThief.getThiefId()].down();
             partyAccess[partyId].down();
 
-            while (parties[partyId].canIMove(currentThief) && currentThief.getPosition() > siteLocation) {
-                parties[partyId].move(currentThief);
+            while (parties[partyId].canIMove() && currentThief.getPosition() > siteLocation) {
+                parties[partyId].move();
             }
             closestThief = parties[partyId].getNext();
             proceed[partyId][closestThief.getThiefId()].up();
