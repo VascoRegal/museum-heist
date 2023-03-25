@@ -2,8 +2,6 @@ package shared;
 
 import structs.Semaphore;
 
-import java.util.logging.Logger;
-
 import consts.HeistConstants;
 import entities.MasterThief;
 import entities.OrdinaryThief;
@@ -11,24 +9,63 @@ import entities.Party;
 import entities.Room;
 import entities.ThiefState;
 
+/**
+ *  GeneralMemory class
+ *
+ *  Contains information regarding the state of each
+ *  entity
+ *
+ *  Public methods are controlled with an access semaphore
+ *
+ */
 public class GeneralMemory {
-
-    private static final Logger LOGGER = Logger.getLogger( Class.class.getName() );    
     
+    /**
+     *   Semaphore to ensure mutual exlusion
+     */
+
     private final Semaphore access;
+
+    /**
+     *   is heist still running
+     */
 
     private boolean heistInProgress;
 
+    /**
+     *   Reference to OTs Threads
+     */
+
     private OrdinaryThief[] ordinaryThief;
+
+    /**
+     *   Reference to MT Thread
+     */
 
     private MasterThief masterThief;
 
+    /**
+     *   Reference to rooms
+     */
+
     private Room[] rooms;
+
+    /**
+     *   Reference to parties
+     */
 
     private Party[] parties;
 
+    /**
+     *   Number of total paintings collected
+     */
+
     private int totalPaintings;
 
+
+    /**
+     *  General Site memory instantiation.
+     */
 
     public GeneralMemory() {
         heistInProgress = true;
@@ -37,17 +74,39 @@ public class GeneralMemory {
         access.up();
     }
 
+
+    /**
+     *   Set Ordinary THief state
+     * 
+     *      @param id thief id
+     *      @param state thief state
+     */
+
     public void setOrdinaryThiefState(int id, ThiefState state) {
         access.down();
         ordinaryThief[id].setThiefState(state);
         access.up();
     }
 
+    /**
+     *   Set Master Thief state
+     * 
+     *      @param state thief state
+     */
+
     public void setMasterThiefState(ThiefState state) {
         access.down();
         masterThief.setThiefState(state);
         access.up();
     }
+
+
+    /**
+     *   Return heist statue
+     * 
+     *      @return true, if heist in progress
+     *              false, if otherwise
+     */
 
     public boolean isHeistInProgres() {
         boolean res;
@@ -57,21 +116,51 @@ public class GeneralMemory {
         return res;
     }
 
+    /**
+     *   Update reference
+     */
+
     public void setOrdinaryThieves(OrdinaryThief[] ordinaryThiefs) {
+        access.down();
         this.ordinaryThief = ordinaryThiefs;
+        access.up();
     }
+
+    /**
+     *   Update reference
+     */
 
     public void setMasterThief(MasterThief mt) {
+        access.down();
         this.masterThief = mt;
+        access.up();
     }
+
+    /**
+     *   Update reference
+     */
 
     public void setParties(Party[] parties) {
+        access.down();
         this.parties = parties;
+        access.up();
     }
 
+    /**
+     *   Update reference
+     */
+
     public void setRooms(Room[] rooms) {
+        access.down();
         this.rooms = rooms;
+        access.up();
     }
+
+    /**
+     *   Change heist state
+     * 
+     *      @param totalPaintings number of paints collected
+     */
 
     public void finishHeist(int totalPaintings) {
         access.down();
@@ -80,7 +169,12 @@ public class GeneralMemory {
         access.up();
     }
 
+    /**
+     *   Log the state of the stored references
+     */
+
     public void logInternalState() {
+        access.down();
         String log = String.format("""
                     Heist to the Museum - Description of the internal state
         
@@ -137,5 +231,6 @@ public class GeneralMemory {
         log += "\n\n -------------------------------------------------------------------------------------------------- \n";
 
         System.out.println(log);
+        access.up();
     }
 }

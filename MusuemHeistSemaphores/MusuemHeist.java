@@ -26,7 +26,7 @@ public class MusuemHeist {
         concentrationSite.setCollectionSiteMemory(collectionSite);
 
         for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
-            ordinaryThieves[i] = new OrdinaryThief(i, concentrationSite, partiesMemory, musuemMemory, collectionSite);
+            ordinaryThieves[i] = new OrdinaryThief(i, concentrationSite, partiesMemory, musuemMemory, collectionSite, generalMemory);
         }
         generalMemory.setOrdinaryThieves(ordinaryThieves);
         masterThief = new MasterThief(0, collectionSite, generalMemory);

@@ -26,17 +26,24 @@ public class MasterThief extends Thief {
             action = collectionSiteMemory.appraiseSit();
             switch (action) {
                 case 'p':
+                    generalMemory.logInternalState();
                     partyId = collectionSiteMemory.prepareAssaultParty();
+                    generalMemory.logInternalState();
                     collectionSiteMemory.sendAssaultParty(partyId);
+                    generalMemory.logInternalState();
                     break;
                 case 'r':
+                    generalMemory.logInternalState();
                     collectionSiteMemory.takeARest();
+                    generalMemory.logInternalState();
                     collectionSiteMemory.collectACanvas();
+                    generalMemory.logInternalState();
                     break;
                 case 's':
                     break;
             }
         }
         collectionSiteMemory.sumUpResults();
+        generalMemory.logInternalState();
     }
 }

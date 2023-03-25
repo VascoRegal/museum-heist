@@ -4,6 +4,7 @@ import consts.HeistConstants;
 import structs.Utils;
 import shared.CollectionSiteMemory;
 import shared.ConcentrationSiteMemory;
+import shared.GeneralMemory;
 import shared.MusuemMemory;
 import shared.PartiesMemory;
 
@@ -14,17 +15,19 @@ public class OrdinaryThief extends Thief
     private boolean hasCanvas;
     private ThiefPartyState partyState;
     private int partyId;
-    private ConcentrationSiteMemory concentrationSiteMemory;
-    private PartiesMemory partiesMemory;
-    private MusuemMemory musuemMemory;
-    private CollectionSiteMemory collectionSiteMemory;
+    private final ConcentrationSiteMemory concentrationSiteMemory;
+    private final PartiesMemory partiesMemory;
+    private final MusuemMemory musuemMemory;
+    private final CollectionSiteMemory collectionSiteMemory;
+    private final GeneralMemory generalMemory;
 
     public OrdinaryThief(
         int id, 
         ConcentrationSiteMemory concentrationSiteMemory, 
         PartiesMemory partiesMemory, 
         MusuemMemory musuemMemory,
-        CollectionSiteMemory collectionSiteMemory
+        CollectionSiteMemory collectionSiteMemory,
+        GeneralMemory generalMemory
     )
     {
         super(id);
@@ -38,12 +41,14 @@ public class OrdinaryThief extends Thief
         this.musuemMemory = musuemMemory;
         this.partiesMemory = partiesMemory;
         this.collectionSiteMemory = collectionSiteMemory;
+        this.generalMemory = generalMemory;
     }
 
     public void run() {
         while (concentrationSiteMemory.amINeeded()) {
             int room = -1;
 
+            generalMemory.logInternalState();
             partyId = concentrationSiteMemory.prepareExcursion();
             room = partiesMemory.crawlingIn();
             musuemMemory.rollACanvas(room);

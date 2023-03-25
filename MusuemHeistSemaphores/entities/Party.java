@@ -23,6 +23,10 @@ public class Party {
         partyArray = new MemPartyArray(thieves);
     }
 
+    public int getId() {
+        return this.id;
+    }
+
     public int getFirst() {
         return partyArray.head().getThiefId();
     }

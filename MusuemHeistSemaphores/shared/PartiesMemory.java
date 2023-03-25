@@ -1,30 +1,79 @@
 package shared;
 
-import java.util.logging.Logger;
-
 import consts.HeistConstants;
 import entities.OrdinaryThief;
 import entities.Party;
 import entities.ThiefState;
 import structs.Semaphore;
 
-public class PartiesMemory {
+/**
+ *  PartiesMemory class
+ *
+ *  Shared memory containing movement operations
+ *
+ *  Public methods are controlled with an access semaphore
+ *  This region contains a number of sub regions equal to 
+ *  the number of parties, controlled by an array of semaphores
+ *
+ *  Synchronization points:
+ *      - Head Ordianry Thief waiting to start movement
+ *      - Ordinary Thief waiting to move
+ */
+public class PartiesMemory {  
 
-    private static final Logger LOGGER = Logger.getLogger( Class.class.getName() );    
+     /*
+     *   Array of blocking semaphores for the access to
+     *   a subregion, indexed by partyId
+     */
 
     private final Semaphore [] partyAccess;
 
+     /*
+     *   General access for non movement operations
+     */
+
     private final Semaphore generalAccess;
+
+     /*
+     *   2D Array of blocking semaphores for the access to
+     *   a thief in a party
+     */
 
     private final Semaphore [][] proceed; 
 
+    /**
+     *   Reference to parties
+     */
+
     private final Party [] parties;
+
+    /**
+     *   Reference to museuem morery
+     */
 
     private final MusuemMemory musuemMemory;
 
+    /**
+     *   Reference to general memory
+     */
+
     private final GeneralMemory generalMemory;
 
+    /**
+     *   number of active parties
+     */
+
     private int numActiveParties;
+
+
+    /**
+     *  Parties memory instantiation.
+     *
+     *    @param generalMemory general memory reference
+     *    @param concentrationSiteMemory concentration memory reference
+     *    @param museumMemory museum memory reference
+     *    @param partiesMemory parties memory reference
+     */
 
     public PartiesMemory(MusuemMemory musuemMemory, GeneralMemory generalMemory) {
         this.musuemMemory = musuemMemory;
@@ -48,9 +97,17 @@ public class PartiesMemory {
         generalAccess.up();
     }
 
+    /**
+     *  Party creation on memory
+     *  Tries to create a party otherwise raise an exception 
+     * 
+     *    @param roomId id of the target room
+     *    @return id of the created party
+     */
+
     public int createParty(int roomId) {
         generalAccess.down();
-        generalMemory.logInternalState();
+        // TODO: raise exception on invalid party
         int partyId = -1;
         for (int i = 0; i < parties.length; i++) {
             if (parties[i] == null) {
@@ -66,9 +123,16 @@ public class PartiesMemory {
         return partyId;
     }
 
+    /**
+     *  Party deletion
+     *  Resets members and semaphores
+     * 
+     *    @param partyId id of the target party
+     */
+
     public void disbandParty(int partyId) {
         generalAccess.down();
-        generalMemory.logInternalState();
+        // generalMemorylogInternalState();
         parties[partyId] = null;
         numActiveParties--;
         for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
@@ -78,6 +142,13 @@ public class PartiesMemory {
         generalMemory.setParties(parties);
     }
 
+    /**
+     *  Get the current num of active parties
+     *  Called by Master Thief to decide what to do
+     * 
+     *    @return num of parties
+     */
+
     public int getNumActiveParties() {
         generalAccess.down();
         int num = numActiveParties;
@@ -86,31 +157,65 @@ public class PartiesMemory {
     }
 
     
+    /**
+     *  Assigns thief to party
+     * 
+     *    @param partyId id of the target party
+     *    @param thief  thief to be added
+     */
+
     public void addThiefToParty(int partyId, OrdinaryThief thief) {
         generalAccess.down();
         parties[partyId].join(thief);
         generalAccess.up();
     }
 
+    /**
+     *  Notify head of party to start movement
+     * 
+     *    @param partyId id of the target party  
+     */
+
     public void startParty(int partyId) {
         int headId;
 
         generalAccess.down();
-        generalMemory.logInternalState();
+        // generalMemorylogInternalState();
         headId = parties[partyId].getFirst();
         proceed[partyId][headId].up();
         generalAccess.up();
     }
 
+    
+    /**
+     *  Notify head of party to start reverse movement
+     * 
+     *    @param partyId id of the target party  
+     */
+
     public void reverseDirection(int partyId) {
         int headId;
 
         partyAccess[partyId].down();
-        generalMemory.logInternalState();
+        // generalMemorylogInternalState();
         headId = parties[partyId].getFirst();
         partyAccess[partyId].up();
         proceed[partyId][headId].up();
     }
+
+    /**
+     *  Crawling in movement
+     * 
+     *    Ordinary Thief blocks and waits to be awaken either
+     *    by the start of the movement by the MasterThief or
+     *    by another OridnaryThief giving him his turn
+     * 
+     *    If thief can move, do the best possible move
+     *    Else, get the closest thief to him, notify him and
+     *    go back to blocking
+     * 
+     *    If after the movement thief is at his goal, transition state
+     */
 
     public int crawlingIn() {
         OrdinaryThief currentThief, closestThief;
@@ -124,7 +229,7 @@ public class PartiesMemory {
         while (true) {
             proceed[partyId][currentThief.getThiefId()].down();
             partyAccess[partyId].down();
-            generalMemory.logInternalState();
+            // generalMemorylogInternalState();
             while (parties[partyId].canIMove(currentThief) && currentThief.getPosition() < roomLocation) {
                 parties[partyId].move(currentThief);
             }
@@ -145,6 +250,11 @@ public class PartiesMemory {
         return parties[partyId].getRoomId();
     }
 
+
+    /**
+     *   Similar to crawling in but with different end
+     *      postions and movement increments
+     */
     public boolean crawlingOut() {
         OrdinaryThief currentThief, closestThief;
         int partyId, siteLocation;
@@ -162,7 +272,6 @@ public class PartiesMemory {
         while (true) {
             proceed[partyId][currentThief.getThiefId()].down();
             partyAccess[partyId].down();
-            generalMemory.logInternalState();
 
             while (parties[partyId].canIMove(currentThief) && currentThief.getPosition() > siteLocation) {
                 parties[partyId].move(currentThief);
