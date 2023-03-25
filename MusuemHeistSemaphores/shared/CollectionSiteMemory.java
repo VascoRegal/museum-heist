@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 import consts.HeistConstants;
 import entities.MasterThief;
 import entities.OrdinaryThief;
-import entities.Party;
 import entities.RoomState;
 import entities.ThiefState;
 import structs.MemQueue;
@@ -88,11 +87,11 @@ public class CollectionSiteMemory {
 
     public boolean startOperations() {
         access.down();
-        // LOGGER.info("[MT] Starting Operations...");
+        generalMemory.logInternalState();
+
         if (masterThief == null) {
             masterThief = (MasterThief) Thread.currentThread();
         }
-        masterThief.setThiefState(ThiefState.PLANNING_THE_HEIST);
         generalMemory.setMasterThiefState(ThiefState.PLANNING_THE_HEIST);
         access.up();
         return true;
@@ -101,17 +100,15 @@ public class CollectionSiteMemory {
     public char appraiseSit() {
         char action;
         int numAvailableThieves, numActiveParties;
-        generalMemory.logInternalState();
         access.down();
-        // LOGGER.info("[MT] Appraise Sitting");
+        generalMemory.logInternalState();
 
-        masterThief.setThiefState(ThiefState.DECIDING_WHAT_TO_DO);
         generalMemory.setMasterThiefState(ThiefState.DECIDING_WHAT_TO_DO);
         numActiveParties = partiesMemory.getNumActiveParties();
 
         if (totalClearedRooms == HeistConstants.NUM_ROOMS && numActiveParties == 0) 
         {
-            generalMemory.finishHeist();
+            generalMemory.finishHeist(totalPaintings);
             return 's';
         }
 
@@ -137,7 +134,8 @@ public class CollectionSiteMemory {
     public int prepareAssaultParty() {
         int numConfirmedThieves, partyId, availableThief, roomId;
         //LOGGER.info("[MT] Preparing Assault Party");
-        masterThief.setThiefState(ThiefState.ASSEMBLING_A_GROUP);
+        access.down();
+        generalMemory.logInternalState();
         generalMemory.setMasterThiefState(ThiefState.ASSEMBLING_A_GROUP);
 
         roomId = musuemMemory.findNonClearedRoom().getId();
@@ -152,23 +150,25 @@ public class CollectionSiteMemory {
 
         numConfirmedThieves = 0;
         while (numConfirmedThieves < HeistConstants.PARTY_SIZE) {
+            access.up();
             assemble.down();
             numConfirmedThieves += 1;
-            // LOGGER.info("[MT] Thief confirmed (" + numConfirmedThieves + ")");
+            access.down();
         }
         musuemMemory.markRoomAs(roomId, RoomState.IN_PROGRESS);
+        access.up();
         return partyId;
     }
 
     public boolean sendAssaultParty(int partyId) {
+        generalMemory.logInternalState();
         partiesMemory.startParty(partyId);
         return true;
     }
 
     public boolean takeARest() {
         access.down();
-        // LOGGER.info("[MT] Taking a rest.");
-        masterThief.setThiefState(ThiefState.WAITING_FOR_GROUP_ARRIVAL);
+        generalMemory.logInternalState();
         generalMemory.setMasterThiefState(ThiefState.WAITING_FOR_GROUP_ARRIVAL);    
         access.up();
         arrival.down();
@@ -180,6 +180,8 @@ public class CollectionSiteMemory {
         int partyId, roomId;
 
         access.down();
+
+        generalMemory.logInternalState();
 
         handingThief = collectQueue.dequeue();
         partyId = handingThief.getPartyId();
@@ -205,17 +207,20 @@ public class CollectionSiteMemory {
             partiesMemory.disbandParty(partyId);
         }
 
-        collect[handingThief.getThiefId()].up();
         access.up();
+        collect[handingThief.getThiefId()].up();
         return true;
     }
 
     public boolean handACanvas() {
         OrdinaryThief currentThief;
 
+        access.down();
+        generalMemory.logInternalState();
         currentThief = ((OrdinaryThief) Thread.currentThread());
         collectQueue.enqueue(currentThief);
         arrival.up();
+        access.up();
         collect[currentThief.getThiefId()].down();
         currentThief.setPartyId(-1);
         return true;
@@ -224,7 +229,7 @@ public class CollectionSiteMemory {
     public boolean sumUpResults() {
         int numConfirmedThieves;
 
-        masterThief.setThiefState(ThiefState.PRESENTING_THE_REPORT);
+        generalMemory.logInternalState();
         generalMemory.setMasterThiefState(ThiefState.PRESENTING_THE_REPORT);
         concentrationSiteMemory.notifyEndOfHeist();
         numConfirmedThieves = 0;
@@ -233,6 +238,7 @@ public class CollectionSiteMemory {
             numConfirmedThieves += 1;
         }
 
+        generalMemory.logInternalState();
         System.out.println("Total paintings: " + totalPaintings);
 
         return true;

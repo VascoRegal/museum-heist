@@ -52,12 +52,11 @@ public class ConcentrationSiteMemory {
         int ordinaryThiefId;
 
         access.down();
+        //generalMemory.logInternalState();
         ordinaryThiefId = ((OrdinaryThief) Thread.currentThread()).getThiefId();
         if (ordinaryThieves[ordinaryThiefId] == null) {
             ordinaryThieves[ordinaryThiefId] = (OrdinaryThief) Thread.currentThread();
         }
-        // LOGGER.info("[OT" + ordinaryThiefId + "] Am I needed?");
-        ordinaryThieves[ordinaryThiefId].setThiefState(ThiefState.CONCENTRATION_SITE);
         generalMemory.setOrdinaryThiefState(ordinaryThiefId, ThiefState.CONCENTRATION_SITE);
         availableThieves.enqueue(ordinaryThiefId);
         collectionSiteMemory.notifyAvailable();
@@ -76,8 +75,8 @@ public class ConcentrationSiteMemory {
         int ordinaryThiefId;
         
         access.down();
+        generalMemory.logInternalState();
         ordinaryThiefId = ((OrdinaryThief) Thread.currentThread()).getThiefId();
-        // LOGGER.info("[OT" + ordinaryThiefId + "] Preparing for excursion!");
         collectionSiteMemory.confirmParty();
         access.up();
         return  ordinaryThieves[ordinaryThiefId].getPartyId();
@@ -85,6 +84,7 @@ public class ConcentrationSiteMemory {
 
     public void addThiefToParty(int thiefId, int partyId) {
         access.down();
+        generalMemory.logInternalState();
         ordinaryThieves[thiefId].setPartyId(partyId);
         partiesMemory.addThiefToParty(partyId, ordinaryThieves[thiefId]);
         access.up();

@@ -49,6 +49,7 @@ public class MusuemMemory {
         Room targetRoom;
 
         access.down();
+        generalMemory.logInternalState();
         currentThief = ((OrdinaryThief) Thread.currentThread());
         targetRoom = rooms[roomId];
 

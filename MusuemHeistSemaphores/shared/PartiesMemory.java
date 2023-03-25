@@ -50,6 +50,7 @@ public class PartiesMemory {
 
     public int createParty(int roomId) {
         generalAccess.down();
+        generalMemory.logInternalState();
         int partyId = -1;
         for (int i = 0; i < parties.length; i++) {
             if (parties[i] == null) {
@@ -67,6 +68,7 @@ public class PartiesMemory {
 
     public void disbandParty(int partyId) {
         generalAccess.down();
+        generalMemory.logInternalState();
         parties[partyId] = null;
         numActiveParties--;
         for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
@@ -93,14 +95,20 @@ public class PartiesMemory {
     public void startParty(int partyId) {
         int headId;
 
+        generalAccess.down();
+        generalMemory.logInternalState();
         headId = parties[partyId].getFirst();
         proceed[partyId][headId].up();
+        generalAccess.up();
     }
 
     public void reverseDirection(int partyId) {
         int headId;
 
+        partyAccess[partyId].down();
+        generalMemory.logInternalState();
         headId = parties[partyId].getFirst();
+        partyAccess[partyId].up();
         proceed[partyId][headId].up();
     }
 
@@ -110,12 +118,13 @@ public class PartiesMemory {
         int roomLocation;
 
         currentThief = ((OrdinaryThief) Thread.currentThread());
-        currentThief.setThiefState(ThiefState.CRAWLING_INWARDS);
+        generalMemory.setOrdinaryThiefState(currentThief.getThiefId(), ThiefState.CRAWLING_INWARDS);
         partyId = currentThief.getPartyId();
         roomLocation = musuemMemory.getRoomLocation(parties[partyId].getRoomId());
         while (true) {
             proceed[partyId][currentThief.getThiefId()].down();
             partyAccess[partyId].down();
+            generalMemory.logInternalState();
             while (parties[partyId].canIMove(currentThief) && currentThief.getPosition() < roomLocation) {
                 parties[partyId].move(currentThief);
             }
@@ -127,7 +136,7 @@ public class PartiesMemory {
 
             if (currentThief.getPosition() >= roomLocation) {
                 currentThief.setPosition(roomLocation);
-                currentThief.setThiefState(ThiefState.AT_A_ROOM);
+                generalMemory.setOrdinaryThiefState(currentThief.getThiefId(), ThiefState.AT_A_ROOM);
                 break;
             }
             partyAccess[partyId].up();
@@ -143,7 +152,7 @@ public class PartiesMemory {
         currentThief = ((OrdinaryThief) Thread.currentThread());
         partyId = currentThief.getPartyId();
 
-        currentThief.setThiefState(ThiefState.CRAWLING_OUTWARDS);
+        generalMemory.setOrdinaryThiefState(currentThief.getThiefId(), ThiefState.CRAWLING_OUTWARDS);
         siteLocation = 0;
 
         if ( currentThief.getThiefId() == parties[partyId].getLast() ) {
@@ -153,6 +162,7 @@ public class PartiesMemory {
         while (true) {
             proceed[partyId][currentThief.getThiefId()].down();
             partyAccess[partyId].down();
+            generalMemory.logInternalState();
 
             while (parties[partyId].canIMove(currentThief) && currentThief.getPosition() > siteLocation) {
                 parties[partyId].move(currentThief);
@@ -161,7 +171,7 @@ public class PartiesMemory {
             proceed[partyId][closestThief.getThiefId()].up();
             if (currentThief.getPosition() <= siteLocation) {
                 currentThief.setPosition(siteLocation);
-                currentThief.setThiefState(ThiefState.COLLECTION_SITE);
+                generalMemory.setOrdinaryThiefState(currentThief.getThiefId(), ThiefState.COLLECTION_SITE);
                 break;
             }
             partyAccess[partyId].up();

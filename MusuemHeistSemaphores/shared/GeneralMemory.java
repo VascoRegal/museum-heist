@@ -17,10 +17,6 @@ public class GeneralMemory {
     
     private final Semaphore access;
 
-    private final ThiefState [] ordinaryThiefState;
-
-    private ThiefState masterThiefState;
-
     private boolean heistInProgress;
 
     private OrdinaryThief[] ordinaryThief;
@@ -31,22 +27,19 @@ public class GeneralMemory {
 
     private Party[] parties;
 
+    private int totalPaintings;
+
 
     public GeneralMemory() {
-        ordinaryThiefState = new ThiefState [HeistConstants.NUM_THIEVES];
-        for (int i=0; i < HeistConstants.NUM_THIEVES; i++) {
-            ordinaryThiefState[i] = ThiefState.CONCENTRATION_SITE;
-        }
-        masterThiefState = ThiefState.PLANNING_THE_HEIST;
-        heistInProgress = false;
-        access = new Semaphore();
         heistInProgress = true;
+        totalPaintings = 0;
+        access = new Semaphore();
         access.up();
     }
 
     public void setOrdinaryThiefState(int id, ThiefState state) {
         access.down();
-        ordinaryThief[id].setThiefState(state);;
+        ordinaryThief[id].setThiefState(state);
         access.up();
     }
 
@@ -80,9 +73,10 @@ public class GeneralMemory {
         this.rooms = rooms;
     }
 
-    public void finishHeist() {
+    public void finishHeist(int totalPaintings) {
         access.down();
-        heistInProgress = false;
+        this.heistInProgress = false;
+        this.totalPaintings = totalPaintings;
         access.up();
     }
 
@@ -93,43 +87,51 @@ public class GeneralMemory {
             MstT            Thief 0         Thief 1         Thief 2         Thief 3         Thief 4         Thief 5
         """);
 
-        log += String.format("     %s         ", masterThief.getThiefState().label);
+        log += String.format("    %2s          ", masterThief.getThiefState().label);
 
         for (int i = 0; i < HeistConstants.NUM_THIEVES; i++ ) {
-            log += String.format(" %s  %s   %d ", ordinaryThief[i].getThiefState().label, (ordinaryThief[i].getPartyId() == -1) ? "W" : "P", ordinaryThief[i].getMaxDisplacement());
-            log += "    ";
+            if (ordinaryThief[i] != null) {
+                log += String.format(" %2s  %2s  %2d", ordinaryThief[i].getThiefState().label, (ordinaryThief[i].getPartyId() == -1) ? "W" : "P", ordinaryThief[i].getMaxDisplacement());
+                log += "    ";
+            } else {
+                log += String.format(" %2s  %2s  %2s", "X", "X", "X");
+                
+            }
         }
 
         log += "\n";
         log += String.format("""
-                    Assault Party 0                      Assault Party 1                           Museum
-                Elem1    Elem2    Elem3             Elem1    Elem2    Elem3         Room0     Room1     Room2     Room3     Room4 
+                            Assault Party 0                         Assault Party 1                                         Museum
+                    Elem1       Elem2       Elem3               Elem1        Elem2      Elem3               Room0     Room1     Room2     Room3     Room4 
         """);
 
         OrdinaryThief [] partyMembers;
         for (int i = 0; i < HeistConstants.MAX_NUM_PARTIES; i++) {
             if (parties[i] == null) {
-                log += "     X  X X X    X X X    X X X  ";
-                log += "   ";
+                
+                log += String.format("     %2s   %2s %2s %2s    %2s %2s %2s    %2s %2s %2s  ","X","X","X","X","X","X","X","X","X","X");
             } else {
-                log += String.format("    %d ", parties[i].getRoomId());
+                log += String.format("     %2d", parties[i].getRoomId());
                 partyMembers = parties[i].memebersAsArray();
                 
                 for (int j = 0; j < partyMembers.length; j++ ) {
-                    log += String.format("  %d %d %d  ", partyMembers[j].getThiefId(), partyMembers[j].getPosition(), (ordinaryThief[i].hasCanvas()) ? 1 : 0);
+                    if (partyMembers[j] != null) {
+                        log += String.format("  %2d %2d %2d  ", partyMembers[j].getThiefId(), partyMembers[j].getPosition(), (ordinaryThief[i].hasCanvas()) ? 1 : 0);
+                    } else {
+                        log += String.format("  %2s %2s %2s  ", "X","X","X");
+                    }
                 }
-                log += "  ";
             }
         }
-        log += "   ";
+        log += "           ";
         for (int i = 0; i < HeistConstants.NUM_ROOMS; i++) {
-            log += String.format("  %d %d    ", rooms[i].getNumHangingPaintings(), rooms[i].getLocation());
+            log += String.format("  %d %d   ", rooms[i].getNumHangingPaintings(), rooms[i].getLocation());
         }
 
         log += "\n";
 
         if (!heistInProgress) {
-            log += "\nMy friends, tonight's efforts produced %d priceless paintings.";
+            log += String.format("\nMy friends, tonight's efforts produced %d priceless paintings.", this.totalPaintings);
         }
 
         log += "\n\n -------------------------------------------------------------------------------------------------- \n";
