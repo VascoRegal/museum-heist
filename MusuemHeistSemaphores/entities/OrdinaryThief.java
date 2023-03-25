@@ -113,13 +113,9 @@ public class OrdinaryThief extends Thief
         while (concentrationSiteMemory.amINeeded()) {               // while thief is needed
             int room = -1;                                          // reference to target room
 
-            generalMemory.logInternalState();
             partyId = concentrationSiteMemory.prepareExcursion();   // if he's needed, prepare the excursion
-            generalMemory.logInternalState();
-            room = partiesMemory.crawlingIn();                      // begin crawling when ready
-            generalMemory.logInternalState();                       
+            room = partiesMemory.crawlingIn();                      // begin crawling when ready                     
             musuemMemory.rollACanvas(room);                         // at the room, steal canvas
-            generalMemory.logInternalState();
             partiesMemory.crawlingOut();                            // crawl back to site
             collectionSiteMemory.handACanvas();                     // hand the canvas
         }

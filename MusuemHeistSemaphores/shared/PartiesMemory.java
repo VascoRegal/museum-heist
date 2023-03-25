@@ -4,6 +4,7 @@ import consts.HeistConstants;
 import entities.OrdinaryThief;
 import entities.Party;
 import entities.ThiefState;
+import structs.MemException;
 import structs.Semaphore;
 
 /**
@@ -162,11 +163,18 @@ public class PartiesMemory {
      * 
      *    @param partyId id of the target party
      *    @param thief  thief to be added
+     *    @throws MemException
      */
 
     public void addThiefToParty(int partyId, OrdinaryThief thief) {
         generalAccess.down();
-        parties[partyId].join(thief);
+        try {
+            parties[partyId].join(thief);
+        } catch (MemException e) {
+            e.printStackTrace();
+            generalAccess.up();
+            System.exit(1);
+        }
         generalAccess.up();
     }
 

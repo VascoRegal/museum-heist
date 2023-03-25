@@ -1,6 +1,7 @@
 package entities;
 
 import consts.HeistConstants;
+import structs.MemException;
 import structs.MemPartyArray;
 
 /**
@@ -102,9 +103,10 @@ public class Party {
      *  Add ordinary thief to party
      * 
      *      @param thief to add
+     *      @throws MemException party is full
      */
 
-    public void join(OrdinaryThief ordinaryThief) {
+    public void join(OrdinaryThief ordinaryThief) throws MemException {
         partyArray.join(ordinaryThief);
     }
 

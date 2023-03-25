@@ -1,5 +1,13 @@
 package structs;
 
+/**
+ *  MemQueue Class
+ * 
+ *  parametric FIFO queue
+ * 
+ *  used to manage available and arriving thieves
+ *  
+ */
 public class MemQueue<T> {
     private int front, rear, size;
     private T[] array;

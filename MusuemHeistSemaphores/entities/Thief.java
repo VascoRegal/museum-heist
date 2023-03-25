@@ -39,6 +39,7 @@ public abstract class Thief extends Thread {
      * 
      *      @return thief id
      */
+
     public int getThiefId() {
         return this.id;
     }
@@ -48,6 +49,7 @@ public abstract class Thief extends Thread {
      * 
      *      @return thief state
      */
+
     public ThiefState getThiefState() {
         return state;
     }
@@ -57,6 +59,7 @@ public abstract class Thief extends Thread {
      * 
      *      @param thief state
      */
+    
     public void setThiefState(ThiefState state) {
         this.state = state;
     }
