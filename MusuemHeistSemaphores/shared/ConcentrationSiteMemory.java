@@ -111,8 +111,10 @@ public class ConcentrationSiteMemory {
             ordinaryThieves[ordinaryThiefId] = (OrdinaryThief) Thread.currentThread();
         }
         availableThieves.enqueue(ordinaryThiefId);
-        collectionSiteMemory.notifyAvailable();
+
+        System.out.println("ENQUED " + ordinaryThiefId);
         access.up();
+        collectionSiteMemory.notifyAvailable();
         wait[ordinaryThiefId].down();
 
         if (!generalMemory.isHeistInProgres()) {
@@ -181,6 +183,7 @@ public class ConcentrationSiteMemory {
         int availableThief;
         access.down();
         availableThief = availableThieves.dequeue();
+        System.out.println("DEQUED " + availableThief);
         access.up();
         return availableThief;
     }

@@ -99,10 +99,10 @@ public class CollectionSiteMemory {
      private final MemQueue<OrdinaryThief> collectQueue;
  
      /*
-     *   Index of thieves current parties
+     *   Index of parties current count
      */
  
-     private final int [] partyMembers;
+     private final int [] partyCounts;
  
      /**
      *   Index of parties current target rooms
@@ -158,9 +158,9 @@ public class CollectionSiteMemory {
         for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
             collect[i] = new Semaphore();
         }
-        partyMembers = new int[HeistConstants.MAX_NUM_PARTIES];
+        partyCounts = new int[HeistConstants.MAX_NUM_PARTIES];
         for (int i = 0; i < HeistConstants.MAX_NUM_PARTIES; i++) {
-            partyMembers[i] = 0;
+            partyCounts[i] = 0;
         }
         partyRooms = new int[HeistConstants.MAX_NUM_PARTIES];
         for (int i = 0; i < HeistConstants.MAX_NUM_PARTIES; i++) {
@@ -231,8 +231,10 @@ public class CollectionSiteMemory {
         else {
             numAvailableThieves = 0;
             while (numAvailableThieves < HeistConstants.PARTY_SIZE) {
+                access.up();
                 wait.down();
                 numAvailableThieves += 1;
+                access.down();
             }
             action = 'p';
         }
@@ -275,7 +277,7 @@ public class CollectionSiteMemory {
             availableThief = concentrationSiteMemory.getAvailableThief();
             concentrationSiteMemory.addThiefToParty(availableThief, partyId);
             access.down();
-            partyMembers[partyId] += 1;
+            partyCounts[partyId] += 1;
         }
 
         numConfirmedThieves = 0;
@@ -334,6 +336,7 @@ public class CollectionSiteMemory {
      */
     public boolean collectACanvas() {
         OrdinaryThief handingThief;
+        OrdinaryThief [] partyMembers;
         int partyId, roomId;
 
         access.down();
@@ -347,23 +350,35 @@ public class CollectionSiteMemory {
             totalPaintings++;
         } else {
             if (!clearedRooms[roomId]) {
+                access.up();
                 museumMemory.markRoomAs(roomId, RoomState.COMPLETED);
+                access.down();
                 clearedRooms[roomId] = true;
                 totalClearedRooms++;
             }
         }
 
-        partyMembers[partyId]--;
+        partyCounts[partyId]--;
 
-        if (partyMembers[partyId] == 0) {
+        if (partyCounts[partyId] == 0) {
             if (!clearedRooms[roomId]) {
+                access.up();
                 museumMemory.markRoomAs(roomId, RoomState.AVAILABLE);
+                access.down();
             }
-            partiesMemory.disbandParty(partyId);
-        }
 
+            access.up();
+            partyMembers = partiesMemory.getMembers(partyId);
+            access.down();
+            for (int i = 0; i < HeistConstants.PARTY_SIZE; i++ ) {
+                collect[partyMembers[i].getThiefId()].up();
+                partyMembers[i].setPartyId(-1);
+            }
+            access.up();
+            partiesMemory.disbandParty(partyId);
+            access.down();
+        }
         access.up();
-        collect[handingThief.getThiefId()].up();
         return true;
     }
 
@@ -384,10 +399,9 @@ public class CollectionSiteMemory {
         access.down();
         currentThief = ((OrdinaryThief) Thread.currentThread());
         collectQueue.enqueue(currentThief);
-        arrival.up();
         access.up();
+        arrival.up();
         collect[currentThief.getThiefId()].down();
-        currentThief.setPartyId(-1);
     }
 
 
@@ -407,9 +421,10 @@ public class CollectionSiteMemory {
         while (numConfirmedThieves < HeistConstants.NUM_THIEVES) {
             access.up();
             wait.down();
-            numConfirmedThieves += 1;
             access.down();
+            numConfirmedThieves += 1;
         }
+        System.out.println("total : " + totalPaintings);
         access.up();
     }
 
@@ -420,7 +435,9 @@ public class CollectionSiteMemory {
      *  the concentration site
      */
     public void notifyAvailable() {
+        access.down();
         wait.up();
+        access.up();
     }
 
     /**
@@ -430,6 +447,8 @@ public class CollectionSiteMemory {
      *  the concentration site
      */
     public void confirmParty() {
+        access.down();
         assemble.up();
+        access.up();
     }
 }

@@ -17,14 +17,16 @@ public class MuseumHeist {
     protected static final Logger LOGGER = Logger.getLogger( Class.class.getName() );
     
     public static void main(String [] args) {
-        
-        if (args.length != 1) {
-            usage();
-            System.exit(1);
-        } 
+        String logfile;
+
+        if (args.length > 0) {
+            logfile = args[0];
+        } else {
+            logfile = "out.log";
+        }
 
         try {
-            setupLogging(args[0]);
+            setupLogging(logfile);
         } catch (IOException e) {
             e.printStackTrace();
             usage();

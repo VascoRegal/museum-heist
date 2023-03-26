@@ -9,32 +9,37 @@ package structs;
  *  
  */
 public class MemQueue<T> {
-    private int front, rear, size;
+    private int in, out, size;
+    private boolean empty;
     private T[] array;
 
     public MemQueue( T [] array) {
         this.array = array;
-        this.front = 0;
-        this.rear = -1;
+        this.in = this.out = 0;
         this.size = 0;
+        empty = true;
     }
 
     public void enqueue(T object) {
-        if (!isFull()) {
-            rear = (rear + 1) % array.length;
-            array[rear] = object;
-            size += 1;
+        if ((in != out) || empty) {
+            array[in] = object;
+            in = (in + 1) % array.length;
+            empty = false;
+            size++;
         }
     }
 
     public T dequeue() {
-        T object = null;
-        if (!isEmpty()) {
-            object = this.array[front];
-            front = (front + 1) % array.length;
-            size -= 1;
+
+        T obj = null;
+
+        if (!empty) {
+            obj = array[out];
+            out = (out + 1) % array.length;
+            empty = (in == out);
+            size--;
         }
-        return object;
+        return obj;
     }
 
     public T[] array() {
@@ -47,14 +52,6 @@ public class MemQueue<T> {
 
     public T[] getArray() {
         return this.array;
-    }
-
-    private boolean isFull() {
-        return (size == array.length);
-    }
-
-    private boolean isEmpty() {
-        return (size == 0);
     }
 
 }

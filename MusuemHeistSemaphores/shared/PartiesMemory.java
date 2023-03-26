@@ -146,8 +146,8 @@ public class PartiesMemory {
         parties[partyId] = null;
         numActiveParties--;
         for (int i = 0; i < HeistConstants.NUM_THIEVES; i++) {
-            proceed[partyId][i].release();
-            retreat[partyId][i].release();
+            proceed[partyId][i] = new Semaphore();
+            retreat[partyId][i] = new Semaphore();
         }
         generalAccess.up();
         generalMemory.setParties(parties);
@@ -186,6 +186,22 @@ public class PartiesMemory {
             System.exit(1);
         }
         generalAccess.up();
+    }
+
+    /**
+     *  Get thieves in party
+     * 
+     *  Called by the master thief to awake thieves after collection
+     * 
+     *      @param partyId
+     *      @return list of thieves in party
+     */
+    public OrdinaryThief[] getMembers(int partyId) {
+        OrdinaryThief[] members;
+        partyAccess[partyId].down();
+        members = parties[partyId].memebersAsArray();
+        partyAccess[partyId].up();
+        return members;
     }
 
     /**
@@ -243,6 +259,7 @@ public class PartiesMemory {
         partyId = currentThief.getPartyId();
         roomLocation = museumMemory.getRoomLocation(parties[partyId].getRoomId());
         while (true) {
+            generalMemory.logInternalState();
             proceed[partyId][currentThief.getThiefId()].down();
             partyAccess[partyId].down();
             while (parties[partyId].canIMove() && currentThief.getPosition() < roomLocation) {
