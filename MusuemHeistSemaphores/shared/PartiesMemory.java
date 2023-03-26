@@ -298,6 +298,7 @@ public class PartiesMemory {
             reverseDirection(partyId);
         }
         while (true) {
+            generalMemory.logInternalState();
             retreat[partyId][currentThief.getThiefId()].down();
             partyAccess[partyId].down();
 

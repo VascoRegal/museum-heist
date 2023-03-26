@@ -190,6 +190,7 @@ public class CollectionSiteMemory {
         }
         generalMemory.setMasterThiefState(ThiefState.PLANNING_THE_HEIST);
         access.up();
+        generalMemory.logInternalState();
         return true;
     }
 
@@ -214,6 +215,7 @@ public class CollectionSiteMemory {
 
         generalMemory.setMasterThiefState(ThiefState.DECIDING_WHAT_TO_DO);
         numActiveParties = partiesMemory.getNumActiveParties();
+        generalMemory.logInternalState();
         access.down();
         if (totalClearedRooms == HeistConstants.NUM_ROOMS && numActiveParties == 0) 
         {
@@ -270,6 +272,7 @@ public class CollectionSiteMemory {
             access.up();
             System.exit(1);
         }
+        generalMemory.logInternalState();
         partyRooms[partyId] = roomId;
 
         for (int i = 0; i < HeistConstants.PARTY_SIZE; i++) {
@@ -315,6 +318,7 @@ public class CollectionSiteMemory {
     public void takeARest() {
         access.down();
         generalMemory.setMasterThiefState(ThiefState.WAITING_FOR_GROUP_ARRIVAL);    
+        generalMemory.logInternalState();
         access.up();
         arrival.down();
     }
@@ -339,7 +343,7 @@ public class CollectionSiteMemory {
         int partyId, roomId;
 
         access.down();
-
+        generalMemory.logInternalState();
         handingThief = collectQueue.dequeue();
         partyId = handingThief.getPartyId();
         roomId = partyRooms[partyId];
@@ -394,6 +398,7 @@ public class CollectionSiteMemory {
         access.up();
         arrival.up();
         collect[currentThief.getThiefId()].down();
+        generalMemory.logInternalState();
     }
 
 
@@ -416,8 +421,8 @@ public class CollectionSiteMemory {
             access.down();
             numConfirmedThieves += 1;
         }
-        System.out.println("total : " + totalPaintings);
         access.up();
+        generalMemory.logInternalState();
     }
 
     /**
