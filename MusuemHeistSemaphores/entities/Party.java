@@ -110,6 +110,15 @@ public class Party {
         partyArray.join(ordinaryThief);
     }
 
+    /**
+     *  Thief leaves the party
+     * 
+     *      @param ordinaryThief
+     */
+    public void leave(OrdinaryThief ordinaryThief) {
+        partyArray.leave(ordinaryThief);
+    }
+
 
     /**
      *  Check if thief can move

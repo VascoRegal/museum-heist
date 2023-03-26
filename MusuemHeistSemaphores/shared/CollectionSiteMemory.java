@@ -336,7 +336,6 @@ public class CollectionSiteMemory {
      */
     public boolean collectACanvas() {
         OrdinaryThief handingThief;
-        OrdinaryThief [] partyMembers;
         int partyId, roomId;
 
         access.down();
@@ -366,19 +365,12 @@ public class CollectionSiteMemory {
                 museumMemory.markRoomAs(roomId, RoomState.AVAILABLE);
                 access.down();
             }
-
-            access.up();
-            partyMembers = partiesMemory.getMembers(partyId);
-            access.down();
-            for (int i = 0; i < HeistConstants.PARTY_SIZE; i++ ) {
-                collect[partyMembers[i].getThiefId()].up();
-                partyMembers[i].setPartyId(-1);
-            }
             access.up();
             partiesMemory.disbandParty(partyId);
             access.down();
         }
         access.up();
+        collect[handingThief.getThiefId()].up();
         return true;
     }
 

@@ -76,6 +76,24 @@ public class MemPartyArray {
     }
 
     /**
+     *  Find the thief to remove and set its index to null
+     *  If thief is head, assign next to head
+     * 
+     *      @param thief
+     */
+    public void leave(OrdinaryThief thief) {
+        for (int i = 0; i < HeistConstants.PARTY_SIZE; i++) {
+            if (data[i] != null && (data[i].getThiefId() == thief.getThiefId())) {
+                data[i] = null;
+
+                if (head.getThiefId() == thief.getThiefId()) {
+                    head = getNext();
+                }
+            }
+        }
+    }
+
+    /**
      *  Get the current moving thief
      * 
      *      @return thief
@@ -119,31 +137,32 @@ public class MemPartyArray {
         closestThief = null;
         curThiefPosition = currentThief.getPosition();
         for (i = 0; i < HeistConstants.PARTY_SIZE; i++) {
-            if (data[i].getThiefState() != currentThief.getThiefState() ||              // ignore thieves with different states
-                currentThief.getThiefId() == data[i].getThiefId()                       // and dont compare current with itself!
-            ) {
-                continue;
-            }
+            if (data[i] != null) {                                                       // ignore thieves no longer in party
+                if ( data[i].getThiefState() != currentThief.getThiefState() ||          // ignore thieves with different states
+                currentThief.getThiefId() == data[i].getThiefId())                       // and dont compare current with itself!
+                {
+                    continue;
+                }
 
-            if (closestThief == null) {                                                 // if closest is unedifined
-                closestThief = data[i];                                                 // iteration is the closest so far
-            } else{
-                curThiefDistance = Math.abs(curThiefPosition - data[i].getPosition());  // distance between current and iteraation thief
-                minDistance = Math.abs(curThiefPosition - closestThief.getPosition());  // distance between current and closest
-                if (curThiefDistance == minDistance) {                                  // if distances are equal, return the one behind
-                    if (currentThief.getThiefState() == ThiefState.CRAWLING_INWARDS) {  // the concept "behind" depends on the direction of the movement
-                        if (currentThief.getPosition() > data[i].getPosition()) {
-                            closestThief = data[i];
+                if (closestThief == null) {                                                 // if closest is unedifined
+                    closestThief = data[i];                                                 // iteration is the closest so far
+                } else{
+                    curThiefDistance = Math.abs(curThiefPosition - data[i].getPosition());  // distance between current and iteraation thief
+                    minDistance = Math.abs(curThiefPosition - closestThief.getPosition());  // distance between current and closest
+                    if (curThiefDistance == minDistance) {                                  // if distances are equal, return the one behind
+                        if (currentThief.getThiefState() == ThiefState.CRAWLING_INWARDS) {  // the concept "behind" depends on the direction of the movement
+                            if (currentThief.getPosition() > data[i].getPosition()) {
+                                closestThief = data[i];
+                            }
+                        } else if (currentThief.getPosition() < data[i].getPosition()) {    // condition if movement is outwards
+                            closestThief = data[i];                                         // update the closest
                         }
-                    } else if (currentThief.getPosition() < data[i].getPosition()) {    // condition if movement is outwards
-                        closestThief = data[i];                                         // update the closest
                     }
-                }
-                else if (curThiefDistance < minDistance) {                              // if found a new minimum
-                    closestThief = data[i];                                             // update the closest
-                }
-            } 
-            
+                    else if (curThiefDistance < minDistance) {                              // if found a new minimum
+                        closestThief = data[i];                                             // update the closest
+                    }
+                } 
+            }
         }
         return closestThief;
     }
@@ -219,7 +238,7 @@ public class MemPartyArray {
             newTail = tail;
             minDistance = tail.getPosition();
             for (int i = 0 ; i < HeistConstants.PARTY_SIZE; i++) {
-                if (currentThief.getThiefId() != data[i].getThiefId())
+                if (data[i] != null && (currentThief.getThiefId() != data[i].getThiefId()))
                 {
                     if (currentThief.getThiefState() == ThiefState.CRAWLING_INWARDS) {
                         if (data[i].getPosition() < minDistance) {

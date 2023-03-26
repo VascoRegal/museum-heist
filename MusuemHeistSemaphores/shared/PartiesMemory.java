@@ -308,7 +308,12 @@ public class PartiesMemory {
             retreat[partyId][closestThief.getThiefId()].up();
             if (currentThief.getPosition() <= siteLocation) {
                 currentThief.setPosition(siteLocation);
+
+                parties[partyId].leave(currentThief);
+                partyAccess[partyId].up();
                 generalMemory.setOrdinaryThiefState(currentThief.getThiefId(), ThiefState.COLLECTION_SITE);
+                partyAccess[partyId].down();
+
                 break;
             }
             partyAccess[partyId].up();
