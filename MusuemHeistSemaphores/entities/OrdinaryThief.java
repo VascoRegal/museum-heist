@@ -4,8 +4,7 @@ import consts.HeistConstants;
 import structs.Utils;
 import shared.CollectionSiteMemory;
 import shared.ConcentrationSiteMemory;
-import shared.GeneralMemory;
-import shared.MusuemMemory;
+import shared.MuseumMemory;
 import shared.PartiesMemory;
 
 
@@ -41,12 +40,6 @@ public class OrdinaryThief extends Thief
      */
 
     private int partyId;
-
-     /**
-     *   Reference to the General Memory
-     */
- 
-     private final GeneralMemory generalMemory;
  
      /**
      *   Reference to the Concentration Site Memory
@@ -55,10 +48,10 @@ public class OrdinaryThief extends Thief
      private final ConcentrationSiteMemory concentrationSiteMemory;
  
      /**
-     *   Reference to the Musuem Memory
+     *   Reference to the Museum Memory
      */
  
-     private final MusuemMemory musuemMemory;
+     private final MuseumMemory museumMemory;
  
      /**
      *   Reference to the Parties Memory
@@ -76,7 +69,6 @@ public class OrdinaryThief extends Thief
     /**
      *  Collection Site memory instantiation.
      *
-     *    @param generalMemory general memory reference
      *    @param concentrationSiteMemory concentration memory reference
      *    @param museumMemory museum memory reference
      *    @param partiesMemory parties memory reference
@@ -87,9 +79,8 @@ public class OrdinaryThief extends Thief
         int id, 
         ConcentrationSiteMemory concentrationSiteMemory, 
         PartiesMemory partiesMemory, 
-        MusuemMemory musuemMemory,
-        CollectionSiteMemory collectionSiteMemory,
-        GeneralMemory generalMemory
+        MuseumMemory museumMemory,
+        CollectionSiteMemory collectionSiteMemory
     )
     {
         super(id);
@@ -99,10 +90,9 @@ public class OrdinaryThief extends Thief
         this.partyId = -1;
         this.hasCanvas = false;
         this.concentrationSiteMemory = concentrationSiteMemory;
-        this.musuemMemory = musuemMemory;
+        this.museumMemory = museumMemory;
         this.partiesMemory = partiesMemory;
         this.collectionSiteMemory = collectionSiteMemory;
-        this.generalMemory = generalMemory;
     }
 
     /**
@@ -114,8 +104,8 @@ public class OrdinaryThief extends Thief
             int room = -1;                                          // reference to target room
 
             partyId = concentrationSiteMemory.prepareExcursion();   // if he's needed, prepare the excursion
-            room = partiesMemory.crawlingIn();                      // begin crawling when ready                     
-            musuemMemory.rollACanvas(room);                         // at the room, steal canvas
+            room = partiesMemory.crawlingIn();                      // begin crawling when ready                    
+            museumMemory.rollACanvas(room);                         // at the room, steal canvas
             partiesMemory.crawlingOut();                            // crawl back to site
             collectionSiteMemory.handACanvas();                     // hand the canvas
         }
@@ -174,8 +164,12 @@ public class OrdinaryThief extends Thief
      *  Toggle the canvas flag
      */
 
-    public void handleCanvas() {
-        this.hasCanvas = ! this.hasCanvas;
+    public void pickCanvas() {
+        this.hasCanvas = true;
+    }
+
+    public void removeCanvas() {
+        this.hasCanvas = false;
     }
 
     /**

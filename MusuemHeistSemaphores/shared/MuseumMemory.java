@@ -14,7 +14,7 @@ import structs.Semaphore;
  *
  *  Public methods are controlled with an access semaphore
  */
-public class MusuemMemory {
+public class MuseumMemory {
     
     /**
      *   Reference to the General Memory
@@ -40,7 +40,7 @@ public class MusuemMemory {
      *    @param generalMemory general memory reference
      */
 
-    public MusuemMemory(GeneralMemory generalMemory) {
+    public MuseumMemory(GeneralMemory generalMemory) {
         this.generalMemory = generalMemory;
         access = new Semaphore();
         access.up();
@@ -113,13 +113,12 @@ public class MusuemMemory {
         Room targetRoom;
 
         access.down();
-        // generalMemorylogInternalState();
         currentThief = ((OrdinaryThief) Thread.currentThread());
         targetRoom = rooms[roomId];
 
         if (!targetRoom.isEmpty()) {
             targetRoom.removePainting();
-            currentThief.handleCanvas();
+            currentThief.pickCanvas();
         }
         access.up();
     }

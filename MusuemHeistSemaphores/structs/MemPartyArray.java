@@ -162,8 +162,8 @@ public class MemPartyArray {
         closestThief = getClosest();
         if (tail.getThiefId() == currentThief.getThiefId() ||                               // if current is tail
             closestThief == null                                                            // or there's no closest thief (current is the only still moving)
-        ) {                         
-            return true;                                                                    // he can always move (no thief will be left behind)                                                        
+        ) {                          
+            return true;                                                                    // he can always move (no thief will be left behind)
         }
 
         closestDistance = Math.abs(currentThief.getPosition() - closestThief.getPosition());// distance to the closest thief

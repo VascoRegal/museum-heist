@@ -5,6 +5,7 @@ import entities.MasterThief;
 import entities.OrdinaryThief;
 import entities.RoomState;
 import entities.ThiefState;
+import structs.MemException;
 import structs.MemQueue;
 import structs.Semaphore;
 
@@ -49,10 +50,10 @@ public class CollectionSiteMemory {
      private final ConcentrationSiteMemory concentrationSiteMemory;
  
      /**
-     *   Reference to the Musuem Memory
+     *   Reference to the Museum Memory
      */
  
-     private final MusuemMemory musuemMemory;
+     private final MuseumMemory museumMemory;
  
      /**
      *   Reference to the Parties Memory
@@ -140,13 +141,13 @@ public class CollectionSiteMemory {
     public CollectionSiteMemory(
         GeneralMemory generalMemory, 
         ConcentrationSiteMemory concentrationSiteMemory, 
-        MusuemMemory musuemMemory,
+        MuseumMemory museumMemory,
         PartiesMemory partiesMemory
     ) {
         masterThief = null;
         this.generalMemory = generalMemory;
         this.concentrationSiteMemory = concentrationSiteMemory;
-        this.musuemMemory = musuemMemory;
+        this.museumMemory = museumMemory;
         this.partiesMemory = partiesMemory;
         access = new Semaphore();
         access.up();
@@ -220,9 +221,9 @@ public class CollectionSiteMemory {
             generalMemory.finishHeist(totalPaintings);
             return 's';
         }
-
+        
         if (numActiveParties == HeistConstants.MAX_NUM_PARTIES ||
-            (musuemMemory.findNonClearedRoom() == null && numActiveParties == 1)    
+            (museumMemory.findNonClearedRoom() == null && numActiveParties == 1)    
         ) 
         {
             action = 'r';
@@ -258,13 +259,22 @@ public class CollectionSiteMemory {
         access.down();
         generalMemory.setMasterThiefState(ThiefState.ASSEMBLING_A_GROUP);
 
-        roomId = musuemMemory.findNonClearedRoom().getId();
-        partyId = partiesMemory.createParty(roomId);
+        partyId = -1;
+        roomId = museumMemory.findNonClearedRoom().getId();
+        try {
+            partyId = partiesMemory.createParty(roomId);
+        } catch (MemException e) {
+            e.printStackTrace();
+            access.up();
+            System.exit(1);
+        }
         partyRooms[partyId] = roomId;
 
         for (int i = 0; i < HeistConstants.PARTY_SIZE; i++) {
+            access.up();
             availableThief = concentrationSiteMemory.getAvailableThief();
             concentrationSiteMemory.addThiefToParty(availableThief, partyId);
+            access.down();
             partyMembers[partyId] += 1;
         }
 
@@ -275,7 +285,7 @@ public class CollectionSiteMemory {
             numConfirmedThieves += 1;
             access.down();
         }
-        musuemMemory.markRoomAs(roomId, RoomState.IN_PROGRESS);
+        museumMemory.markRoomAs(roomId, RoomState.IN_PROGRESS);
         access.up();
         return partyId;
     }
@@ -333,11 +343,11 @@ public class CollectionSiteMemory {
         roomId = partyRooms[partyId];
 
         if (handingThief.hasCanvas()) {
-            handingThief.handleCanvas();
+            handingThief.removeCanvas();
             totalPaintings++;
         } else {
             if (!clearedRooms[roomId]) {
-                musuemMemory.markRoomAs(roomId, RoomState.COMPLETED);
+                museumMemory.markRoomAs(roomId, RoomState.COMPLETED);
                 clearedRooms[roomId] = true;
                 totalClearedRooms++;
             }
@@ -347,7 +357,7 @@ public class CollectionSiteMemory {
 
         if (partyMembers[partyId] == 0) {
             if (!clearedRooms[roomId]) {
-                musuemMemory.markRoomAs(roomId, RoomState.AVAILABLE);
+                museumMemory.markRoomAs(roomId, RoomState.AVAILABLE);
             }
             partiesMemory.disbandParty(partyId);
         }
@@ -400,8 +410,6 @@ public class CollectionSiteMemory {
             numConfirmedThieves += 1;
             access.down();
         }
-
-        System.out.println("Total paintings: " + totalPaintings);
         access.up();
     }
 

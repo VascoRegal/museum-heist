@@ -107,7 +107,6 @@ public class ConcentrationSiteMemory {
         ordinaryThiefId = ((OrdinaryThief) Thread.currentThread()).getThiefId();
         generalMemory.setOrdinaryThiefState(ordinaryThiefId, ThiefState.CONCENTRATION_SITE);
         access.down();
-        //// generalMemorylogInternalState();
         if (ordinaryThieves[ordinaryThiefId] == null) {
             ordinaryThieves[ordinaryThiefId] = (OrdinaryThief) Thread.currentThread();
         }
@@ -136,10 +135,10 @@ public class ConcentrationSiteMemory {
         int ordinaryThiefId;
         
         access.down();
-        // generalMemorylogInternalState();
         ordinaryThiefId = ((OrdinaryThief) Thread.currentThread()).getThiefId();
-        collectionSiteMemory.confirmParty();
+        generalMemory.setOrdinaryThiefState(ordinaryThiefId, ThiefState.CRAWLING_INWARDS);
         access.up();
+        collectionSiteMemory.confirmParty();
         return  ordinaryThieves[ordinaryThiefId].getPartyId();
     }
 
@@ -152,10 +151,9 @@ public class ConcentrationSiteMemory {
      */
     public void addThiefToParty(int thiefId, int partyId) {
         access.down();
-        // generalMemorylogInternalState();
         ordinaryThieves[thiefId].setPartyId(partyId);
-        partiesMemory.addThiefToParty(partyId, ordinaryThieves[thiefId]);
         access.up();
+        partiesMemory.addThiefToParty(partyId, ordinaryThieves[thiefId]);
         wait[thiefId].up();
     }
 

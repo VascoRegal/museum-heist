@@ -48,7 +48,6 @@ public class MasterThief extends Thief {
 
         collectionSiteMemory.startOperations();                             // start the operations
         while (generalMemory.isHeistInProgres()) {                          // while heist is running
-            //generalMemory.logInternalState();
             action = collectionSiteMemory.appraiseSit();                    // decide what action to do next
             switch (action) {           
                 case 'p':                                                   // 'p' - create a party
@@ -64,6 +63,5 @@ public class MasterThief extends Thief {
             }
         }
         collectionSiteMemory.sumUpResults();                                // sum up and present the results
-        //generalMemory.logInternalState();
     }
 }
